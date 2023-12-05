@@ -42,7 +42,8 @@ void ClientTcpPoisson::initialize(int stage)
     if (stage == INITSTAGE_LOCAL) {
         if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
         {
-            std::cout<<"Initialize in client"<<endl;}
+            std::cout<<"Initialize in client today December 5"<<endl;}
+
         numRequestsToSend = 0;
         numRequestsToRecieve=0;
         replyCount=0;
@@ -124,8 +125,8 @@ void ClientTcpPoisson::sendRequest()
         EV_INFO << "sending request with " << requestLength << " bytes, expected reply length " << replyLength << " bytes,"
                 << "remaining " << numRequestsToSend - 1 << " request\n";
         sendPacket(packet);
-        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-        { std::cout<< this->getFullPath() <<"    sendRequest NO.:    "<< numRequestsToSend <<  "    at:   "<< simTime()<<endl;}
+//        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//        { std::cout<< this->getFullPath() <<"    sendRequest NO.:    "<< numRequestsToSend <<  "    at:   "<< simTime()<<endl;}
 
 
         sendInternalReqTime=simTime();
@@ -173,10 +174,10 @@ void ClientTcpPoisson::handleTimer(cMessage *msg)
 
         case MSGKIND_REPLYTIMEOUT:
         {
-            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-            {
-                std::cout<< this->getFullPath() <<"    in MSGKIND_REPLYTIMEOUT       at:   "<< simTime()<<endl;
-            }
+//            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//            {
+//                std::cout<< this->getFullPath() <<"    in MSGKIND_REPLYTIMEOUT       at:   "<< simTime()<<endl;
+//            }
            // if (((simTime()-lastReplyTime) > replyTimeMax) || ((simTime()-lastReplyTime) == replyTimeMax) || replyCount==0)
             simtime_t now_reply = simTime()-lastReplyTime;
             if (now_reply > replyTimeMax)
@@ -193,8 +194,8 @@ void ClientTcpPoisson::handleTimer(cMessage *msg)
                             numRequestsToSend++;
                             simtime_t d = simTime();
                             rescheduleOrDeleteTimer(d, MSGKIND_SEND);
-                            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-                                                std::cout<< this->getFullPath() <<"     in MSGKIND_REPLYTIMEOUT       at:   "<< simTime() <<"   numRequestsToSend:     "<< numRequestsToSend<<endl;
+//                            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//                                                std::cout<< this->getFullPath() <<"     in MSGKIND_REPLYTIMEOUT       at:   "<< simTime() <<"   numRequestsToSend:     "<< numRequestsToSend<<endl;
 
                             ++repeated_req;
 
@@ -237,12 +238,12 @@ void ClientTcpPoisson::socketEstablished(TcpSocket *socket)
 
     // determine number of requests in this session
     numRequestsToSend = par("numRequestsPerSession");
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-    {
-    std::cout<<"in  socketEstablished:        "<< this->getFullPath();
-    std::cout<<"           numRequestsToSend:           "<<numRequestsToSend;
-    std::cout<<"           at:           "<< simTime()<<endl;
-    }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//    {
+//    std::cout<<"in  socketEstablished:        "<< this->getFullPath();
+//    std::cout<<"           numRequestsToSend:           "<<numRequestsToSend;
+//    std::cout<<"           at:           "<< simTime()<<endl;
+//    }
     if (numRequestsToSend < 1)
         numRequestsToSend = 1;
 
@@ -285,22 +286,22 @@ void ClientTcpPoisson::socketDataArrived(TcpSocket *socket, Packet *msg, bool ur
     lastReplyTime=simTime();
     repeated_req=0;
     TcpAppBase::socketDataArrived(socket, msg, urgent);
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-               {
-                    std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
-                    std::cout<<"   numRequestsToSend:           "<<numRequestsToSend<<endl;
-               }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//               {
+//                    std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
+//                    std::cout<<"   numRequestsToSend:           "<<numRequestsToSend<<endl;
+//               }
 
     if (numRequestsToSend > 0) {
         simtime_t myRespTime = simTime()-sendInternalReqTime;
-        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-        {
-        std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
-        std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
-        std::cout<<"   myRespTime:           "<<myRespTime;
-        std::cout<<"   state:           "<<socket->getState();
-        std::cout<<"   at:           "<< simTime()<<endl;
-        }
+//        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//        {
+//        std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
+//        std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
+//        std::cout<<"   myRespTime:           "<<myRespTime;
+//        std::cout<<"   state:           "<<socket->getState();
+//        std::cout<<"   at:           "<< simTime()<<endl;
+//        }
 
         EV_INFO << "reply arrived\n";
         replyCount++;
@@ -334,16 +335,16 @@ void ClientTcpPoisson::socketDataArrived(TcpSocket *socket, Packet *msg, bool ur
 //                 rescheduleOrDeleteTimer(d, MSGKIND_CONNECT);
 //             }
 //            close();
-            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-            {
-
-
-            std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
-            std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
-            std::cout<<"   state:           "<<socket->getState();
-            std::cout<<"   respTime:           "<<respTime;
-            std::cout<<"   at:           "<< simTime()<<endl;
-            }
+//            if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//            {
+//
+//
+////            std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
+////            std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
+////            std::cout<<"   state:           "<<socket->getState();
+////            std::cout<<"   respTime:           "<<respTime;
+////            std::cout<<"   at:           "<< simTime()<<endl;
+//            }
             cancelEvent(timeoutMsg);
 
             socketClosed(socket);
@@ -354,15 +355,15 @@ void ClientTcpPoisson::socketDataArrived(TcpSocket *socket, Packet *msg, bool ur
                      //   socketClosed(socket);
                     //    if (LOCALLY_CLOSED_flag==true){
 
-        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-                   {
-
-
-                   std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
-                   std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
-                   std::cout<<"   STATE is LOCALLY_CLOSED           "<<endl;
-
-                   }
+//        if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//                   {
+//
+//
+////                   std::cout<<"in  socketDataArrived:       "<< this->getFullPath();
+////                   std::cout<<"   numRequestsToSend:           "<<numRequestsToSend;
+////                   std::cout<<"   STATE is LOCALLY_CLOSED           "<<endl;
+//
+//                   }
                               // simtime_t d = simTime() + par("idleInterval");
                               // rescheduleOrDeleteTimer(d, MSGKIND_CONNECT);
                             failedReqNoSendVector.record(replyCount);
@@ -379,10 +380,10 @@ void ClientTcpPoisson::socketDataArrived(TcpSocket *socket, Packet *msg, bool ur
 void ClientTcpPoisson::close()
 {
 
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-                {
-            std::cout<<"   in close   state:           "<<endl;
-                }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//                {
+////            std::cout<<"   in close   state:           "<<endl;
+//                }
     replyCount=-1;
     TcpAppBase::close();
    // cancelEvent(timeoutMsg);
@@ -405,12 +406,12 @@ void ClientTcpPoisson::TimeOutSocketClosed()
 
   //  emit(numLostReqSignal,numLostReq);
     // start another session after a delay
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-    {
-        std::cout<<"in  TimeOutSocketClosed:       "<< this->getFullPath();
-      //  std::cout<<"   state:           "<<socket->getState();
-        std::cout<<"           at:           "<< simTime()<<endl;
-    }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//    {
+////        std::cout<<"in  TimeOutSocketClosed:       "<< this->getFullPath();
+//      //  std::cout<<"   state:           "<<socket->getState();
+//        std::cout<<"           at:           "<< simTime()<<endl;
+//    }
 
     if (timeoutMsg) {
         cancelEvent(timeoutMsg);
@@ -428,12 +429,12 @@ void ClientTcpPoisson::socketClosed(TcpSocket *socket)
 
   //  emit(numLostReqSignal,numLostReq);
     // start another session after a delay
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-    {
-        std::cout<<"in  socketClosed:       "<< this->getFullPath();
-        std::cout<<"   state:           "<<socket->getState();
-        std::cout<<"           at:           "<< simTime()<<endl;
-    }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//    {
+//        std::cout<<"in  socketClosed:       "<< this->getFullPath();
+//        std::cout<<"   state:           "<<socket->getState();
+//        std::cout<<"           at:           "<< simTime()<<endl;
+//    }
 
     if (timeoutMsg) {
         simtime_t d = simTime() + par("idleInterval");
@@ -444,10 +445,10 @@ void ClientTcpPoisson::socketClosed(TcpSocket *socket)
 void ClientTcpPoisson::socketFailure(TcpSocket *socket, int code)
 {
     TcpAppBase::socketFailure(socket, code);
-    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
-            {
-        std::cout<<"   in socketFailure   state:           "<<socket->getState()<<endl;
-            }
+//    if (this->getFullPath()=="PretioWithLB.client[6].app[0]")
+//            {
+//        std::cout<<"   in socketFailure   state:           "<<socket->getState()<<endl;
+//            }
     // reconnect after a delay
     if (timeoutMsg) {
         simtime_t d = simTime() + par("reconnectInterval");
