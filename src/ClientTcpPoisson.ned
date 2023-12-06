@@ -1,4 +1,3 @@
-
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -67,7 +66,7 @@ simple ClientTcpPoisson like IApp
 //
 // @see ~TcpGenericServerApp, ~GenericAppMsg, ~TelnetApp
 //
-	
+
     parameters:
         string localAddress = default(""); // may be left empty ("")
         int localPort = default(-1); // port number to listen on
@@ -86,7 +85,7 @@ simple ClientTcpPoisson like IApp
         int tos = default(-1); // if not -1, set the Type Of Service (IPv4) / Traffic Class (IPv6) field of sent packets to this value
         @display("i=block/app");
         @lifecycleSupport;
-        double stopOperationExtraTime @unit(s) = default(-1s); // extra time after lifecycle stop operation finished
+        double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished
         double stopOperationTimeout @unit(s) = default(2s);    // timeout value for lifecycle stop operation
     
         @signal[packetSent](type=inet::Packet);
