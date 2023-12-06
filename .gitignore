@@ -205,3 +205,4 @@ backups
 *.exe
 *.out
 *.app
+/.computed/
