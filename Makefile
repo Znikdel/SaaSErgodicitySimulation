@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for ErgodicityTest
 #
 # This file was generated with the command:
-#  opp_makemake -f
+#  opp_makemake -f --deep -KINET4_PROJ=../../inet4 -KNEDDEMO_PROJ=../../neddemo -KQUEUEINGLIB_PROJ=../../queueinglib -KQUEUEINGLIBEXT_PROJ=../../queueinglibext -KRESULTFILES_PROJ=../../resultfiles -KROUTING_PROJ=../../routing -KSOCKETS_PROJ=../../sockets -DINET_IMPORT -DQUEUEING_IMPORT -I440055(INET4_PROJ)/src -I440055(QUEUEINGLIB_PROJ) -L440055(INET4_PROJ)/src -L440055(QUEUEINGLIB_PROJ) -L440055(QUEUEINGLIBEXT_PROJ) -lINET440055(D) -lqueueinglib440055(D) -lqueueinglibext440055(D)
 #
 
 # Name of target to be created (-o option)
@@ -20,13 +20,13 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LI
 #USERIF_LIBS = $(QTENV_LIBS)
 
 # C++ include paths (with -I)
-INCLUDE_PATH =
+INCLUDE_PATH = -I440055(INET4_PROJ)/src -I440055(QUEUEINGLIB_PROJ)
 
 # Additional object and library files to link with
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS =
+LIBS = $(LDFLAG_LIBPATH)440055(INET4_PROJ)/src $(LDFLAG_LIBPATH)440055(QUEUEINGLIB_PROJ) $(LDFLAG_LIBPATH)440055(QUEUEINGLIBEXT_PROJ)  -lINET440055(D) -lqueueinglib440055(D) -lqueueinglibext440055(D)
 
 # Output directory
 PROJECT_OUTPUT_DIR = out
@@ -34,13 +34,22 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS =
+OBJS = $O/src/ClientTcpPoisson.o $O/src/RRScheduler.o $O/src/tryQ.o $O/src/tryQStrategy.o $O/src/tryServer.o
 
 # Message files
 MSGFILES =
 
 # SM files
 SMFILES =
+
+# Other makefile variables (-K)
+INET4_PROJ=../../inet4
+NEDDEMO_PROJ=../../neddemo
+QUEUEINGLIB_PROJ=../../queueinglib
+QUEUEINGLIBEXT_PROJ=../../queueinglibext
+RESULTFILES_PROJ=../../resultfiles
+ROUTING_PROJ=../../routing
+SOCKETS_PROJ=../../sockets
 
 #------------------------------------------------------------------------------
 
@@ -60,8 +69,11 @@ include $(CONFIGFILE)
 
 # Simulation kernel and user interface libraries
 OMNETPP_LIBS = $(OPPMAIN_LIB) $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
+ifneq ($(PLATFORM),win32.x86_64)
+LIBS += -Wl,-rpath,$(abspath 440055(INET4_PROJ)/src) -Wl,-rpath,$(abspath 440055(QUEUEINGLIB_PROJ)) -Wl,-rpath,$(abspath 440055(QUEUEINGLIBEXT_PROJ))
+endif
 
-COPTS = $(CFLAGS) $(IMPORT_DEFINES)  $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
+COPTS = $(CFLAGS) $(IMPORT_DEFINES) -DINET_IMPORT -DQUEUEING_IMPORT $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
 MSGCOPTS = $(INCLUDE_PATH)
 SMCOPTS =
 
