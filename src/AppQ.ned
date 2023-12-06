@@ -15,11 +15,6 @@
 
 package ergodicitytest;
 
-import inet.linklayer.ieee80211.mac.queue.CompoundPendingQueue;
-import inet.queueing.queue.CompoundPacketQueue;
-import inet.queueing.queue.PacketQueue;
-
-
 module AppQ
 {
     parameters:
