@@ -28,7 +28,6 @@ namespace ergodicitytest {
 #define MSGKIND_SEND       1
 #define MSGKIND_REPLYTIMEOUT       2
 
-
 Define_Module(ClientTcpPoisson);
 
 ClientTcpPoisson::~ClientTcpPoisson()
