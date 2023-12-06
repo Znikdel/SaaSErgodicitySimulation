@@ -3,13 +3,12 @@
 	<name>ErgodicityTest</name>
 	<comment></comment>
 	<projects>
+		<project>fifo</project>
 		<project>inet4</project>
-		<project>neddemo</project>
 		<project>queueinglib</project>
 		<project>queueinglibext</project>
+		<project>queuenet</project>
 		<project>resultfiles</project>
-		<project>routing</project>
-		<project>sockets</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -24,6 +23,7 @@
 		</buildCommand>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>
