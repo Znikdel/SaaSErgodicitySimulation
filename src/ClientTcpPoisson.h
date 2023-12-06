@@ -27,7 +27,7 @@
 using namespace inet;
 
 namespace ergodicitytest {
-
+//class ClientTcpPoisson;
 /**
  * TODO - Generated class
  */
