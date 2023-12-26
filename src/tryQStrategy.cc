@@ -18,7 +18,7 @@
 #include "PassiveQueue.h"
 #include "Server.h"
 #include "tryQ.h"
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 
 tryQStrategy::tryQStrategy(cSimpleModule *module, bool selectOnInGate)
@@ -124,7 +124,7 @@ int RandomSelectionStrategy::select()
     return -1;
 }
 
-// --------------------------------------------------------------------------------------------
+// new class--------------------------------------------------------------------------------------------
 
 RoundRobinSelectionStrategy::RoundRobinSelectionStrategy(cSimpleModule *module, bool selectOnInGate) :
         tryQStrategy(module, selectOnInGate)
@@ -145,7 +145,7 @@ int RoundRobinSelectionStrategy::select()
     return -1;
 }
 
-// --------------------------------------------------------------------------------------------
+// new class--------------------------------------------------------------------------------------------
 
 ShortestQueueSelectionStrategy::ShortestQueueSelectionStrategy(cSimpleModule *module, bool selectOnInGate) :
         tryQStrategy(module, selectOnInGate)

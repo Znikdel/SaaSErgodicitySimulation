@@ -13,15 +13,15 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ERGODICITYTEST_RRSCHEDULER_H_
-#define __ERGODICITYTEST_RRSCHEDULER_H_
+#ifndef __ErgodicityTest_RRSCHEDULER_H_
+#define __ErgodicityTest_RRSCHEDULER_H_
 
 #include <omnetpp.h>
 #include "IServer.h"
 
 using namespace queueing;
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 class tryQStrategy;
 
@@ -42,6 +42,7 @@ class QUEUEING_API RRScheduler : public cSimpleModule, public IServer
         tryQStrategy *selectionStrategy;
         simtime_t wakeUpTime;
         simtime_t shortDelay;
+        simtime_t wentSleep;
 
         cMessage *jobServiced;
         cMessage *endServiceMsg;

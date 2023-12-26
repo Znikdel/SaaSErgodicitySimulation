@@ -13,8 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ERGODICITYTEST_TRYQ_H_
-#define __ERGODICITYTEST_TRYQ_H_
+#ifndef __ErgodicityTest_TRYQ_H_
+#define __ErgodicityTest_TRYQ_H_
 
 #include <omnetpp.h>
 #include "QueueingDefs.h"
@@ -24,7 +24,7 @@
 
 using namespace queueing;
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 //class tryQStrategy;
 

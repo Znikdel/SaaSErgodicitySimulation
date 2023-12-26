@@ -18,7 +18,7 @@
 
 #include "QueueingDefs.h"
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 class QUEUEING_API tryQStrategy : public cObject{
 

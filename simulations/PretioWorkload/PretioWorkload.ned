@@ -13,9 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest.simulations.PretioWorkload;
+package ErgodicityTest.simulations.PretioWorkload;
 
-import ergodicitytest.PhysicalNode;
+import ErgodicityTest.PhysicalNode;
 //
 //
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;

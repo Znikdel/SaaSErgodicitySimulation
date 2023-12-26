@@ -1,6 +1,6 @@
 #!/bin/sh
 cd `dirname $0`
-#../src/ergodicitytest -n .:../src $*
-# for shared lib, use: opp_run -l ../src/ergodicitytest -n .:../src $*
+#../src/ErgodicityTest -n .:../src $*
+# for shared lib, use: opp_run -l ../src/ErgodicityTest -n .:../src $*
 #
-../ergodicitytest -n .:../src $*
+../ErgodicityTest -n .:../src $*

@@ -1,7 +1,7 @@
 // designate the NED package of this folder
-package ergodicitytest;
+package ErgodicityTest;
 
 // namespace of module C++ classes
-@namespace(ergodicitytest);
+@namespace(ErgodicityTest);
 
 @license(LGPL);

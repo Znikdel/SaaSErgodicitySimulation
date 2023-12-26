@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest;
+package ErgodicityTest;
 
 //
 // TODO auto-generated module
@@ -24,7 +24,7 @@ simple RRScheduler
         @group(Queueing);
         @display("i=block/server");
         @signal[busy](type="bool");
-     //   @statistic[busy](title="server busy state";record=vector?,timeavg,mean,max;interpolationmode=sample-hold);
+        @statistic[busy](title="server busy state";record=vector?,timeavg,mean,max;interpolationmode=sample-hold);
 
         string fetchingAlgorithm @enum("priority","random","roundRobin","longestQueue") = default("priority");
              // how the next job will be choosen from the attached queues

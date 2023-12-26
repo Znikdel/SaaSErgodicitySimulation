@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest;
+package ErgodicityTest;
 
 
 
@@ -54,8 +54,8 @@ simple tryServer like IApp
         @statistic[packetReceived](title="packets received"; source=packetReceived; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @statistic[packetSent](title="packets sent"; source=packetSent; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @statistic[endToEndDelay](title="end-to-end delay"; source="dataAge(packetReceived)"; unit=s; record=histogram,weightedHistogram,vector; interpolationmode=none);
-     //   @statistic[QdropApp](title="Q-drop-server"; source=socketQueue; record=count; interpolationmode=none);
-      //  @statistic[packetDropQueueOverflow](title="packet drops: queue overflow"; source=packetDropReasonIsQueueOverflow(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
+     // @statistic[QdropApp](title="Q-drop-server"; source=socketQueue; record=count; interpolationmode=none);
+      //@statistic[packetDropQueueOverflow](title="packet drops: queue overflow"; source=packetDropReasonIsQueueOverflow(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);
      //	@statistic[serverServiceTime](title="serverServiceTime";source=replyDelay; unit=s; record=vector;
     gates:
         input socketIn @labels(TcpCommand/up);

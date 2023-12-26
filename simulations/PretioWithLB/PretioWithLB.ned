@@ -13,9 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest.simulations.PretioWithLB;
+package ErgodicityTest.simulations.PretioWithLB;
 
-import ergodicitytest.PhysicalNode;
+import ErgodicityTest.PhysicalNode;
 //
 //
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
@@ -51,8 +51,9 @@ network PretioWithLB
         cloudNetwork: InternetCloud {
             @display("p=250,300;is=vl");
         }
-        
+
     connections:
+
         for i=0..numClients-1 {
             client[i].pppg++ <--> C <--> cloudNetwork.pppg++;
         }

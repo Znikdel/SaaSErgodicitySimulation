@@ -18,7 +18,7 @@
 #include "IServer.h"
 #include "inet/applications/tcpapp/GenericAppMsg_m.h"
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 Define_Module(TryQ);
 

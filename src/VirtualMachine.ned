@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest;
+package ErgodicityTest;
 
 import inet.applications.contract.IApp;
 

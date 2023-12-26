@@ -26,7 +26,7 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/transportlayer/contract/tcp/TcpCommand_m.h"
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 Define_Module(tryServer);
 
@@ -119,24 +119,28 @@ void tryServer::handleMessage(cMessage *msg)
     else if (msg->getKind() == TCP_I_PEER_CLOSED) {
         // we'll close too, but only after there's surely no message
         // pending to be sent back in this connection
-        EV_INFO << "Receiving TCP CLOSED msg\n";
+        //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+        std::cout<<"   TCP_I_PEER_CLOSED      "<<endl;
         int connId = check_and_cast<Indication *>(msg)->getTag<SocketInd>()->getSocketId();
+        //std::cout<<"   connId    "<< connId <<endl;
         delete msg;
         auto request = new Request("close", TCP_C_CLOSE);
         TcpCommand *cmd = new TcpCommand();
         request->addTag<SocketReq>()->setSocketId(connId);
         request->setControlInfo(cmd);
-
+    //    //std::cout<<"   before scheduling in server msg handling    "<< connId <<endl;
         sendOrSchedule(request, delay + maxMsgDelay);
     }
     else if (msg->getKind() == TCP_I_DATA || msg->getKind() == TCP_I_URGENT_DATA) {
+      //  std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+    //    std::cout<<"   TCP_I_DATA  -  TCP_I_URGENT_DATA      ";//<<endl;  //here send the reply
         Packet *packet = check_and_cast<Packet *>(msg);
         int connId = packet->getTag<SocketInd>()->getSocketId();
         ChunkQueue &queue = socketQueue[connId];
         auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_INCOMPLETE);
         queue.push(chunk);
         emit(packetReceivedSignal, packet);
-
+     //   std::cout<<"   connId    "<< connId <<endl;
         bool doClose = false;
         while (const auto& appmsg = queue.pop<GenericAppMsg>(b(-1), Chunk::PF_ALLOW_NULLPTR)) {
             msgsRcvd++;
@@ -165,6 +169,8 @@ void tryServer::handleMessage(cMessage *msg)
         delete msg;
 
         if (doClose) {
+            //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+            std::cout<<"   TCP_I_DATA  -  Do Close      "<<endl;
             auto request = new Request("close", TCP_C_CLOSE);
             TcpCommand *cmd = new TcpCommand();
             request->addTag<SocketReq>()->setSocketId(connId);
@@ -173,7 +179,13 @@ void tryServer::handleMessage(cMessage *msg)
         }
     }
     else if (msg->getKind() == TCP_I_AVAILABLE)
+    {
+        //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+        //std::cout<<"   TCP_I_AVAILABLE      "<<endl;
+        int connId = check_and_cast<Indication *>(msg)->getTag<SocketInd>()->getSocketId();
+        //std::cout<<"   connId    "<< connId <<endl;
         socket.processMessage(msg);
+    }
     else {
         // some indication -- ignore
         EV_WARN << "drop msg: " << msg->getName() << ", kind:" << msg->getKind() << "(" << cEnum::get("inet::TcpStatusInd")->getStringFor(msg->getKind()) << ")\n";

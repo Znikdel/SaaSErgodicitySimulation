@@ -17,7 +17,7 @@
 #include "IPassiveQueue.h"
 #include "RRScheduler.h"
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 Define_Module(RRScheduler);
 
@@ -32,7 +32,8 @@ RRScheduler::RRScheduler()
     sleepFlag=false;
     schedulerFlag=false;
     shortDelay=0.001;
-
+    wakeUpTime=0;
+    wentSleep=0;
 }
 
 RRScheduler::~RRScheduler()
@@ -72,14 +73,14 @@ void RRScheduler::handleMessage(cMessage *msg)
     else if (msg == wakeUpMsg) {
         wakeup();
     }
-    else if (msg == endServiceMsg) {
+    else if (msg == endServiceMsg) { // send to the tryserver app to produce the response
         if(sleepFlag==false)
         {
             ASSERT(jobServiced != nullptr);
             ASSERT(allocated);
-            simtime_t d = simTime() - endServiceMsg->getSendingTime();
+            simtime_t d = simTime() - endServiceMsg->getSendingTime(); //e.g
           //  jobServiced->setTotalServiceTime(jobServiced->getTotalServiceTime() + d);
-            send(jobServiced, "out");
+            send(jobServiced, "out"); // jobsesrviced is the msg came from client
             jobServiced = nullptr;
             allocated = false;
             emit(busySignal, false);
@@ -94,12 +95,13 @@ void RRScheduler::handleMessage(cMessage *msg)
         }
         else
         {
-            wakeUpTime=wakeUpTime+shortDelay;
-            scheduleAt(wakeUpTime, msg);
+            simtime_t d = simTime() - wentSleep; //e.g 120-112=8 the remaining service
+            simtime_t d2=wakeUpTime+d; //e.g 130+8=138
+            scheduleAt(d2, endServiceMsg);
         }
     }
-    else {
-        if(sleepFlag==false)
+    else {  //msg came from client
+        if(sleepFlag==false)  // when scheduler state is false or its our turn
         {
            if (!allocated)
                        error("job arrived, but the sender did not call allocate() previously");
@@ -107,9 +109,9 @@ void RRScheduler::handleMessage(cMessage *msg)
                throw cRuntimeError("a new job arrived while already servicing one");
            emit(busySignal, true);
            jobServiced = msg;
-           simtime_t serviceTime = par("serviceTime");
-           simtime_t endServiceTime1 = simTime()+serviceTime;
-           simtime_t endServiceTime2 = wakeUpTime+shortDelay;
+           simtime_t serviceTime = par("serviceTime"); //e.g. 10s
+           simtime_t endServiceTime1 = simTime()+serviceTime; //e.g 110+10=120s
+           simtime_t endServiceTime2 = wakeUpTime+shortDelay; //e.g 102+0.001=102.001s
            if (endServiceTime1>=endServiceTime2)
            {
                scheduleAt(endServiceTime1, endServiceMsg);
@@ -126,47 +128,22 @@ void RRScheduler::handleMessage(cMessage *msg)
             scheduleAt(wakeUpTime, msg);
         }
 
-       /* send(jobServiced, "out");
-        allocated = false;
-        jobServiced=nullptr;
-        emit(busySignal, false);
-
-
-        // examine all input queues, and request a new job from a non empty queue
-        int k = selectionStrategy->select();
-        if (k >= 0) {
-           EV << "requesting job from queue " << k << endl;
-           cGate *gate = selectionStrategy->selectableGate(k);
-           check_and_cast<IPassiveQueue *>(gate->getOwnerModule())->request(gate->getIndex());
-                }*/
-    }
+     }
 }
 void RRScheduler::sleep()
 {
-   // allocated=true;
     sleepFlag=true;
-    /*if (jobServiced)
-    {
-        send(jobServiced, "out");
-        allocated = false;
-        jobServiced=nullptr;
-        emit(busySignal, false);
-    }*/
-    simtime_t sleepTime = par("sleepTime");
-    wakeUpTime=simTime()+sleepTime;
-    scheduleAt(wakeUpTime, wakeUpMsg);
-  //  emit(busySignal, true);
+    simtime_t sleepTime = par("sleepTime"); //e.g 20s
+    wakeUpTime=simTime()+sleepTime; //e.g 112+20 = 132
+    wentSleep=simTime();
+    scheduleAt(wakeUpTime, wakeUpMsg); // first wake up then work
 
 }
 void RRScheduler::wakeup()
 {
-  //  allocated=false;
     sleepFlag=false;
     simtime_t wakeTime = par("scheduleShare");
     scheduleAt(simTime()+wakeTime, goToSleepMsg);
-   // emit(busySignal, false);
-
-
 }
 void RRScheduler::refreshDisplay() const
 {

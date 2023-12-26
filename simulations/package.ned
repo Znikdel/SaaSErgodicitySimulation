@@ -1,4 +1,4 @@
 // designate the NED package of this folder
-package ergodicitytest.simulations;
+package ErgodicityTest.simulations;
 
 @license(LGPL);

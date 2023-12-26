@@ -13,8 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ERGODICITYTEST_CLIENTTCPPOISSON_H_
-#define __ERGODICITYTEST_CLIENTTCPPOISSON_H_
+#ifndef __ErgodicityTest_CLIENTTCPPOISSON_H_
+#define __ErgodicityTest_CLIENTTCPPOISSON_H_
 
 #include <omnetpp.h>
 
@@ -26,7 +26,7 @@
 
 using namespace inet;
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 /**
  * TODO - Generated class
@@ -43,9 +43,15 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     bool earlySend = false;    // if true, don't wait with sendRequest() until established()
     bool replyFlag=true;
     bool socketClosedFlag=false;
+    bool connected=false;
+    bool reliableProtocol=true;
+    bool burstyTraffic=false;
+    bool burstStarted=false;
     int numRequestsToSend = 0;    // requests to send in this session
     int numRequestsToRecieve = 0;
     int replyCount=0;
+
+    simtime_t startBurst;
     simtime_t startTime;
     simtime_t stopTime;
     simtime_t sendReqTime;
@@ -53,7 +59,10 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     simtime_t respTime;
     simtime_t lastReplyTime;
     simtime_t sendInternalReqTime;
+
     int replyTimeMax;
+    int burstLen = 0;
+
     cOutVector respTimeVector;
     simsignal_t respTimeSignal;
 
@@ -102,7 +111,7 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     virtual ~ClientTcpPoisson();
 };
 
-} // namespace ergodicitytest
+} // namespace ErgodicityTest
 
-#endif // ifndef ___ERGODICITYTEST_CLIENTTCPPOISSON_H_
+#endif // ifndef ___ErgodicityTest_CLIENTTCPPOISSON_H_
 

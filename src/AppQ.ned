@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest;
+package ErgodicityTest;
 
 import inet.linklayer.ieee80211.mac.queue.CompoundPendingQueue;
 import inet.queueing.queue.CompoundPacketQueue;

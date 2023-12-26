@@ -13,8 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ERGODICITYTEST_TRYSERVER_H_
-#define __ERGODICITYTEST_TRYSERVER_H_
+#ifndef __ErgodicityTest_TRYSERVER_H_
+#define __ErgodicityTest_TRYSERVER_H_
 
 #include <omnetpp.h>
 
@@ -25,7 +25,7 @@
 using namespace inet;
 
 
-namespace ergodicitytest {
+namespace ErgodicityTest {
 
 /**
  * TODO - Generated class
@@ -60,5 +60,5 @@ class INET_API tryServer : public cSimpleModule, public LifecycleUnsupported
 
 } // namespace ergodicity test
 
-#endif // ifndef _ERGODICITYTEST_TRYSERVER_H_
+#endif // ifndef _ErgodicityTest_TRYSERVER_H_
 

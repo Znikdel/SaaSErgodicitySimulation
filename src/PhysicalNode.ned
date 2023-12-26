@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package ergodicitytest;
+package ErgodicityTest;
 
 import inet.examples.diffserv.onedomain.DSQueue1;
 import inet.node.base.TransportLayerNodeBase;
