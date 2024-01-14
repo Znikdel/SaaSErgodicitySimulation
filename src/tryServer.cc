@@ -137,12 +137,16 @@ void tryServer::handleMessage(cMessage *msg)
         Packet *packet = check_and_cast<Packet *>(msg);
         int connId = packet->getTag<SocketInd>()->getSocketId();
         ChunkQueue &queue = socketQueue[connId];
-        auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_INCOMPLETE);
+        auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_INCOMPLETE );
+      //  auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_SERIALIZATION );
+
         queue.push(chunk);
         emit(packetReceivedSignal, packet);
      //   std::cout<<"   connId    "<< connId <<endl;
         bool doClose = false;
-        while (const auto& appmsg = queue.pop<GenericAppMsg>(b(-1), Chunk::PF_ALLOW_NULLPTR)) {
+       // while (const auto& appmsg = queue.pop<GenericAppMsg>(b(-1), Chunk::PF_ALLOW_NULLPTR)) {
+        while (queue.has<GenericAppMsg>(b(-1))) {
+            const auto& appmsg = queue.pop<GenericAppMsg>(b(-1));
             msgsRcvd++;
             bytesRcvd += B(appmsg->getChunkLength()).get();
             B requestedBytes = appmsg->getExpectedReplyLength();

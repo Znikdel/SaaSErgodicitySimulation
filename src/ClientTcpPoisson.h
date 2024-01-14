@@ -40,6 +40,9 @@ class INET_API ClientTcpPoisson : public TcpAppBase
 {
   protected:
     cMessage *timeoutMsg = nullptr;
+    cMessage *reliabletimeoutMsg = nullptr;
+    cMessage *bursttimeoutMsg = nullptr;
+
     bool earlySend = false;    // if true, don't wait with sendRequest() until established()
     bool replyFlag=true;
     bool socketClosedFlag=false;
@@ -47,13 +50,17 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     bool reliableProtocol=true;
     bool burstyTraffic=false;
     bool burstStarted=false;
+    bool firstConnection=true;
     int numRequestsToSend = 0;    // requests to send in this session
     int numRequestsToRecieve = 0;
     int replyCount=0;
+    int mainSocketID=0;
+    int failed_req=0;
 
     simtime_t startBurst;
     simtime_t startTime;
     simtime_t stopTime;
+    simtime_t burst_finished;
     simtime_t sendReqTime;
     simtime_t getReplyTime;
     simtime_t respTime;
@@ -75,18 +82,10 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     bool LOCALLY_CLOSED_flag=false;
   //  TcpSocket mySocket;
     int repeated_req=0;
- //   simsignal_t numReqRecSignal;
- //   simsignal_t numReqSentSignal;
-  //  simsignal_t numLostReqSignal;
 
-   // long numReqSent=0;
-   // long numReqRecieved=0;
-  //  Packet *numLostReq;
-  //  Packet *numReqSent;
-  //  Packet *numReqRecieved;
     Packet *last_packet;
 
-    void replyTimeOut();
+
     void TimeOutSocketClosed();
 
     virtual void sendRequest();

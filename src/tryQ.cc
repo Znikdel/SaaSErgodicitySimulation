@@ -67,7 +67,7 @@ void TryQ::handleMessage(cMessage *msg)
         if (hasGUI())
             bubble("Dropped!");
         emit(droppedSignal, 1);
-        EV_WARN <<"msg dropped is(msg Kind):" <<msg->getKind()<<endl;
+    //    std::cout <<"msg dropped is(msg Kind) at:" <<simTime()<<"    ,    "<<msg->getKind()<<endl;
         //scheduleAt(simTime()+delay, msg);   //try to push message to the queue after delay in hope queue free up some space  , we can't do this because we mess up the ordering
         delete msg;
         return;
