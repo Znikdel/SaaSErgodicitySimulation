@@ -32,6 +32,7 @@ namespace ErgodicityTest {
 #define MSGKIND_BURST_FIN          5
 #define MSGKIND_SEND_REPEAT        6
 #define MSGKIND_CONNECT_BURSTY     7
+#define MSGKIND_RTOS               8
 
 Define_Module(ClientTcpPoisson);
 
@@ -82,16 +83,19 @@ void ClientTcpPoisson::initialize(int stage)
         failed_req=0;  //for non-reliable protocol
         reliableProtocol=par("reliableProtocol");
         burstyTraffic=par("burstyTraffic");
+        RTOS=par("RTOS");
         burstStarted=false;
         burst_finished=0;
+
+        RTOS_hard_limit=8;   //with RTOS reliable should be false
     }
 }
 
 void ClientTcpPoisson::handleStartOperation(LifecycleOperation *operation)
 {
-    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-        std::cout<<"  In  handleStartOperation: "<<
-       this->getId()<<"   ,   "<< this->getFullPath()<< "   Socket Id: "<< socket.getSocketId()<<"at:   "<<simTime()<<"mainSocketID: "<< mainSocketID<<endl;
+//    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//        std::cout<<"  In  handleStartOperation: "<<
+//       this->getId()<<"   ,   "<< this->getFullPath()<< "   Socket Id: "<< socket.getSocketId()<<"at:   "<<simTime()<<"mainSocketID: "<< mainSocketID<<endl;
     simtime_t now = simTime();
     if (!burstyTraffic)
     {
@@ -168,6 +172,8 @@ void ClientTcpPoisson::sendRequest()
 
         if (socket.getState() == TcpSocket::CONNECTED || socket.getState() == TcpSocket::CONNECTING )
                   {
+//            if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//                                                           std::cout<<"In send Packet - Socket Connected at: "<<simTime()<<endl;
                       sendPacket(packet);
                       sendInternalReqTime=simTime();
                       simtime_t d = simTime() + replyTimeMax;
@@ -175,6 +181,13 @@ void ClientTcpPoisson::sendRequest()
                           cancelEvent(reliabletimeoutMsg);  // We got the reply, so no need to check for reply time out
                       reliabletimeoutMsg->setKind(MSGKIND_REPLYTIMEOUT);
                       scheduleAt(d, reliabletimeoutMsg);  //here we check if we got reply in time
+                      if(RTOS)
+                      {
+//                          if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//                                                std::cout<<"In send Packet - MSGKIND_RTOS at: "<<simTime()<<endl;
+                          d=simTime() + RTOS_hard_limit;
+                          rescheduleOrDeleteTimer(d, MSGKIND_RTOS);
+                      }
                   }
             else
             {
@@ -237,7 +250,27 @@ void ClientTcpPoisson::handleTimer(cMessage *msg)
                 }
                 break;
             }
+            case MSGKIND_RTOS:{
+//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//                        std::cout<<"In handle Timer - MSGKIND_RTOS at: "<<simTime()<<endl;
+                long requestLength = par("requestLength");
+                    long replyLength = par("replyLength");
+                    if (requestLength < 1)
+                        requestLength = 1;
+                    if (replyLength < 1)
+                        replyLength = 1;
 
+                    const auto& payload = makeShared<GenericAppMsg>();
+                    Packet *packet = new Packet("data");
+                        payload->setChunkLength(B(requestLength));
+                        payload->setExpectedReplyLength(B(replyLength));
+                        payload->setServerClose(false);
+                        payload->addTag<CreationTimeTag>()->setCreationTime(simTime());
+                        packet->insertAtBack(payload);
+                socketDataArrived(&socket,packet,false);
+
+                break;
+            }
             case MSGKIND_REPLYTIMEOUT:{
              //
                 simtime_t now_reply = simTime()-lastReplyTime;
@@ -552,7 +585,7 @@ void ClientTcpPoisson::socketEstablished(TcpSocket *socket)
 void ClientTcpPoisson::rescheduleOrDeleteTimer(simtime_t d, short int msgKind)
 {
 //    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//               std::cout<<"In rescheduleOrDeleteTimer old msg:"<<timeoutMsg->getKind()<<  "     at:"<< simTime()<<"    new msg::"<<   msgKind<<endl;
+//           std::cout<<"In rescheduleOrDeleteTimer old msg:"<<timeoutMsg->getKind()<<  "     at:"<< simTime()<<"    new msg::"<<   msgKind<<endl;
     if(timeoutMsg)
         cancelEvent(timeoutMsg);
 
@@ -568,9 +601,10 @@ void ClientTcpPoisson::socketDataArrived(TcpSocket *socket, Packet *msg, bool ur
     repeated_req=0;
     TcpAppBase::socketDataArrived(socket, msg, urgent);
     if (numRequestsToSend > 0) {
-//        if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                            std::cout<<"/////////////////////////////   reply arrived at: \n   "<<simTime()<<"  ,  reply_ count:"<<replyCount<<endl;
+
         simtime_t myRespTime = simTime()-sendInternalReqTime;
+//        if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//                                    std::cout<<"/////////////////////////////   reply arrived at:    "<<simTime()<<"  ,  myRespTime:"<<myRespTime<<endl;
         EV_INFO << "reply arrived\n";
         replyCount++;
         numRequestsToRecieve--;

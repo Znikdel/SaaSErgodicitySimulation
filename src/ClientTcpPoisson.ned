@@ -92,7 +92,7 @@ simple ClientTcpPoisson like IApp
     	//double stoptBurst @unit(s) = default(-1s); 
     	int burstLen  @unit(s) = default(-1s); 
     	bool burstyTraffic = default(false);
-    	
+    	bool RTOS = default(false);
         @signal[packetSent](type=inet::Packet);
         @signal[packetReceived](type=inet::Packet);
         @signal[connect](type=long);  // 1 for open, -1 for close

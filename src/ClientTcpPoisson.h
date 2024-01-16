@@ -51,11 +51,14 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     bool burstyTraffic=false;
     bool burstStarted=false;
     bool firstConnection=true;
+    bool RTOS=false;
+
     int numRequestsToSend = 0;    // requests to send in this session
     int numRequestsToRecieve = 0;
     int replyCount=0;
     int mainSocketID=0;
     int failed_req=0;
+    int RTOS_hard_limit=0;
 
     simtime_t startBurst;
     simtime_t startTime;
