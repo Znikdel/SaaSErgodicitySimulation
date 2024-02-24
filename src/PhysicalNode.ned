@@ -15,12 +15,9 @@
 
 package ErgodicityTest;
 
-import inet.examples.diffserv.onedomain.DSQueue1;
-import inet.node.base.TransportLayerNodeBase;
-import inet.node.inet.StandardHost;
-import inet.queueing.common.PacketHistory;
 import inet.applications.contract.IApp;
 import inet.common.MessageDispatcher;
+import inet.node.base.TransportLayerNodeBase;
 
 
 module PhysicalNode extends TransportLayerNodeBase
@@ -28,7 +25,7 @@ module PhysicalNode extends TransportLayerNodeBase
     parameters:
         @display("p=230,200;i=device/server");
         @figure[submodules];
-        
+
         forwarding = default(false);  // disable routing by default
         ipv4.arp.proxyArpInterfaces = default(""); // proxy arp is disabled on hosts by default
         *.routingTableModule = default("^.ipv4.routingTable");

@@ -19,7 +19,7 @@ import inet.applications.contract.IApp;
 //
 // TODO auto-generated module
 //
-simple ClientTcpPoisson like IApp
+simple ErgodicityTestClient like IApp
 {
     
 
@@ -93,6 +93,8 @@ simple ClientTcpPoisson like IApp
     	int burstLen  @unit(s) = default(-1s); 
     	bool burstyTraffic = default(false);
     	bool RTOS = default(false);
+    	bool randomBurst = default(false);
+    	
         @signal[packetSent](type=inet::Packet);
         @signal[packetReceived](type=inet::Packet);
         @signal[connect](type=long);  // 1 for open, -1 for close

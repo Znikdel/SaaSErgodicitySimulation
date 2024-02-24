@@ -13,8 +13,8 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __ErgodicityTest_CLIENTTCPPOISSON_H_
-#define __ErgodicityTest_CLIENTTCPPOISSON_H_
+#ifndef __ErgodicityTest_ErgodicityTestClient_H_
+#define __ErgodicityTest_ErgodicityTestClient_H_
 
 #include <omnetpp.h>
 
@@ -22,7 +22,7 @@
 #include "inet/common/lifecycle/ILifecycle.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/common/INETDefs.h"
-
+#include "inet/common/packet/chunk/FieldsChunk.h"
 
 using namespace inet;
 
@@ -31,7 +31,7 @@ namespace ErgodicityTest {
 /**
  * TODO - Generated class
  */
-class INET_API ClientTcpPoisson : public TcpAppBase
+class INET_API ErgodicityTestClient : public TcpAppBase
 
 /**
  * An example request-reply based client application.
@@ -50,6 +50,7 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     bool reliableProtocol=true;
     bool burstyTraffic=false;
     bool burstStarted=false;
+    bool randomBurst=false;
     bool firstConnection=true;
     bool RTOS=false;
 
@@ -87,16 +88,15 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     int repeated_req=0;
 
     Packet *last_packet;
-
+    //auto sequenceNumber;
 
     void TimeOutSocketClosed();
 
-    virtual void sendRequest();
-    virtual void rescheduleOrDeleteTimer(simtime_t d, short int msgKind);
+
 
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
-    virtual void handleTimer(cMessage *msg) override;
+
     virtual void socketEstablished(TcpSocket *socket) override;
     virtual void socketDataArrived(TcpSocket *socket, Packet *msg, bool urgent) override;
     virtual void socketClosed(TcpSocket *socket) override;
@@ -105,15 +105,30 @@ class INET_API ClientTcpPoisson : public TcpAppBase
     virtual void handleStartOperation(LifecycleOperation *operation) override;
     virtual void handleStopOperation(LifecycleOperation *operation) override;
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
+    virtual void handleTimer(cMessage *msg) override;
+
+    Packet* makePacket(bool resend);
+    virtual void sendRequest(bool resend);
+    virtual void rescheduleOrDeleteTimer(simtime_t d, short int msgKind);
+
+    void msg_Connect(cMessage *msg);
+    void msg_Send(cMessage *msg, bool resend);
+    void msg_ReplyTimeOut(cMessage *msg);
+
+    void msg_Burst_Start(cMessage *msg);
+    void msg_Burst_Finish(cMessage *msg);
+
+    void msg_RTOS(cMessage *msg);
+
 
     virtual void close() override;
 
   public:
-    ClientTcpPoisson() {}
-    virtual ~ClientTcpPoisson();
+    ErgodicityTestClient() {}
+    virtual ~ErgodicityTestClient();
 };
 
 } // namespace ErgodicityTest
 
-#endif // ifndef ___ErgodicityTest_CLIENTTCPPOISSON_H_
+#endif // ifndef ___ErgodicityTest_ErgodicityTestClient_H_
 

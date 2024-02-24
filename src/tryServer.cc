@@ -1,3 +1,4 @@
+
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -65,6 +66,7 @@ void tryServer::initialize(int stage)
 
 void tryServer::sendOrSchedule(cMessage *msg, simtime_t delay)
 {
+ //   std::cout<<"delay:  "<< delay <<endl;
     if (delay == 0)
     {
         sendBack(msg);
@@ -78,6 +80,8 @@ void tryServer::sendOrSchedule(cMessage *msg, simtime_t delay)
 void tryServer::sendBack(cMessage *msg)
 {
     EV_INFO << "in send back self msg\n";
+    auto& tags = getTags(msg);
+    tags.addTagIfAbsent<DispatchProtocolReq>()->setProtocol(&Protocol::tcp);
     Packet *packet = dynamic_cast<Packet *>(msg);
 
     if (packet) {
@@ -85,14 +89,12 @@ void tryServer::sendBack(cMessage *msg)
         bytesSent += packet->getByteLength();
         emit(packetSentSignal, packet);
 
-        EV_INFO << "sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes\n";
+      //  std::cout<< "\n\n sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes at:"<<simTime()<<"\n\n";
     }
     else {
         EV_INFO << "sending \"" << msg->getName() << "\" to TCP\n";
     }
 
-    auto& tags = getTags(msg);
-    tags.addTagIfAbsent<DispatchProtocolReq>()->setProtocol(&Protocol::tcp);
     send(msg, "socketOut");
 }
 
@@ -114,6 +116,7 @@ void tryServer::handleMessage(cMessage *msg)
     TCP_I_DATA_NOTIFICATION = 12; // notify the upper layer that data has arrived
     */
     if (msg->isSelfMessage()) {
+     //   std::cout<<"self message at:      "<<simTime()<<endl;
         sendBack(msg);
     }
     else if (msg->getKind() == TCP_I_PEER_CLOSED) {
@@ -138,7 +141,7 @@ void tryServer::handleMessage(cMessage *msg)
         int connId = packet->getTag<SocketInd>()->getSocketId();
         ChunkQueue &queue = socketQueue[connId];
         auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_INCOMPLETE );
-      //  auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_SERIALIZATION );
+      // auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_SERIALIZATION );
 
         queue.push(chunk);
         emit(packetReceivedSignal, packet);
@@ -153,7 +156,7 @@ void tryServer::handleMessage(cMessage *msg)
             simtime_t msgDelay = appmsg->getReplyDelay();
             if (msgDelay > maxMsgDelay)
                 maxMsgDelay = msgDelay;
-
+      //      std::cout<<"  In SERVER requestedBytes    "<< requestedBytes <<endl;
             if (requestedBytes > B(0)) {
                 Packet *outPacket = new Packet(msg->getName(), TCP_C_SEND);
                 outPacket->addTag<SocketReq>()->setSocketId(connId);

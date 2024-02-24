@@ -108,7 +108,7 @@ void TryQ::request(int gateIndex)
 
     cMessage *msg;
     if (fifo) {
-        msg = (cMessage *)queue.pop();
+        msg = (cMessage *)queue.pop(); // takes from head
     }
     else {
         msg = (cMessage *)queue.back();
