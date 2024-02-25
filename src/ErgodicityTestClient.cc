@@ -234,9 +234,9 @@ Packet* ErgodicityTestClient::makePacket(bool resend)
 //           if(!resend)
 //               std::cout << "sending request with " << requestLength << " bytes, expected reply length " << replyLength << " bytes,"
 //                              << "remaining " << numRequestsToSend-1 << " request\n";
-           if(resend)
-               std::cout << "Re-sending request with " << requestLength << " bytes, expected reply length " << replyLength << " bytes,"
-                                             << "remaining " << numRequestsToSend << " request\n";
+//           if(resend)
+//               std::cout << "Re-sending request with " << requestLength << " bytes, expected reply length " << replyLength << " bytes,"
+//                                             << "remaining " << numRequestsToSend << " request\n";
 
            return packet;
 }
@@ -259,7 +259,8 @@ void ErgodicityTestClient::sendRequest(bool resend)
                       sendInternalReqTime=simTime();
 
                       simtime_t d = simTime() + replyTimeMax;
-//                      std::cout<<"  In  send Request: "<<this->getFullPath() << "    at:   "<<simTime()<< "numRequestsToSend:   "<<numRequestsToSend<< endl<<
+//                      if (this->getFullPath()=="PretioWithLB.client[0].app[0]" and resend)
+//                          std::cout<<"  In  send Request: "<<this->getFullPath() << "    at:   "<<simTime()<< "numRequestsToSend:   "<<numRequestsToSend<< endl<<
 //                              "    resend:   "<<resend << "     reliabletimeoutMsg---> "<<d<<
 //                                 "   ,    Socket Id---> "<< socket.getSocketId()<<endl;
                       if (reliabletimeoutMsg)
@@ -319,19 +320,19 @@ void ErgodicityTestClient::msg_RTOS(cMessage *msg)
 }
 void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
 {
-    simtime_t d;
-    std::cout<<"  In  MSGKIND_REPLYTIMEOUT at: "<< d << endl;
+    simtime_t d=simTime();
+   // std::cout<<"  In  MSGKIND_REPLYTIMEOUT at: "<< d << endl;
     simtime_t now_reply = simTime()-lastReplyTime;
 
                    if (now_reply >= replyTimeMax )
                    {
                        EV_WARN << "didn't get reply from the server, re-sending a request," << "remaining " << numRequestsToSend  << " request\n";
-                       std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
-                                                     this->getFullPath()<< "   Socket Id: "<<
-                                                     socket.getSocketId()<<"at:   "<<simTime() <<
-                                                     "   failed req:   " << failed_req <<
-                                                     "   repeated req: " << repeated_req <<
-                                                     "   sendReqTime:  "  << sendReqTime <<  endl;
+//                       std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
+//                                                     this->getFullPath()<< "   Socket Id: "<<
+//                                                     socket.getSocketId()<<"at:   "<<simTime() <<
+//                                                     "   failed req:   " << failed_req <<
+//                                                     "   repeated req: " << repeated_req <<
+//                                                     "   sendReqTime:  "  << sendReqTime <<  endl;
                        if (!reliableProtocol)
                        {
                           if (failed_req>4)  // we waited for 4 times of max_reply_time. If there is no reply it means it's a failed request
@@ -368,8 +369,15 @@ void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
 
                        }
                        else{  // reliable protocol
+                           if(repeated_req>4)
+                           std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
+                                                                                this->getFullPath()<< "   Socket Id: "<<
+                                                                                socket.getSocketId()<<"at:   "<<simTime() <<
+                                                                                "   repeated req: " << repeated_req <<
+                                                                                "   sendReqTime:  "  << sendReqTime <<  endl;
                        if (timeoutMsg and (repeated_req>8))
                        {
+                           std::cout<<"  In  failed req:  repeated_req  --->"<<repeated_req<<endl;
                            simtime_t d = simTime()-sendReqTime; //sendReqTime is the connect time
                            failedReqVector.record(d);
                            emit(failedReqSignal,d);
@@ -378,13 +386,16 @@ void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
                            d = simTime();
                            connected=false;
                          //  if(!burstyTraffic)
-                               rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
+                            rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
                        }
                        else if (timeoutMsg) {   //re-sending the request
+
 
                                    cancelEvent(timeoutMsg);
                                    d = simTime();
                                    ++repeated_req;
+                                   if(repeated_req>4)
+                                       std::cout<<"  In  resending:  repeated_req  --->"<<repeated_req<<endl;
                                    rescheduleOrDeleteTimer(d, MSGKIND_SEND_REPEAT);
 
                                }
@@ -520,7 +531,8 @@ void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, boo
                 emit(respTimeSignal,respTime); //response time to all small requests, kind of demonstrates the server markov chain
                 simtime_t d = simTime();
     //            if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-    //            std::cout<<"///////////////////////////// LAst  socketDataArrived    ////////////////   at   ---->"<<simTime()<<"resp time: ---->"<<respTime<<endl;
+                if(respTime>500)
+                std::cout<<"///////////////////////////// LAst  socketDataArrived    ////////////////   at   ---->"<<simTime()<<"sendReqTime:    "<<sendReqTime<<"resp time: ---->"<<respTime<<endl;
     //            if (!burstyTraffic)
                     rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
       //          else
@@ -539,7 +551,7 @@ void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, boo
     }
     else
     {
-        std::cout<< this->getFullPath()<<"  msgRecieved: "<<msgRecieved<< "     we are waiting for:---> "<<(numRequestsToSend+1)<<endl;
+      //  std::cout<< this->getFullPath()<<"  msgRecieved: "<<msgRecieved<< "     we are waiting for:---> "<<(numRequestsToSend+1)<<endl;
     }
 }
 void ErgodicityTestClient::close()
