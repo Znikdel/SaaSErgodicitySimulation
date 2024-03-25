@@ -1,4 +1,3 @@
-
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -14,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "tryServer.h"
+#include "midServer.h"
 
 #include "inet/applications/common/SocketTag_m.h"
 #include "inet/applications/tcpapp/GenericAppMsg_m.h"
@@ -29,9 +28,9 @@
 
 namespace ErgodicityTest {
 
-Define_Module(tryServer);
+Define_Module(midServer);
 
-void tryServer::initialize(int stage)
+void midServer::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
@@ -64,10 +63,9 @@ void tryServer::initialize(int stage)
     }
 }
 
-void tryServer::sendOrSchedule(cMessage *msg, simtime_t delay)
+void midServer::sendOrSchedule(cMessage *msg, simtime_t delay)
 {
-//    if(simTime()>5400)
-//        std::cout<<"reply delay in server:  "<< delay <<endl;
+ //   std::cout<<"delay:  "<< delay <<endl;
     if (delay == 0)
     {
         sendBack(msg);
@@ -78,7 +76,7 @@ void tryServer::sendOrSchedule(cMessage *msg, simtime_t delay)
     }
 }
 
-void tryServer::sendBack(cMessage *msg)
+void midServer::sendBack(cMessage *msg)
 {
     EV_INFO << "in send back self msg\n";
     auto& tags = getTags(msg);
@@ -89,8 +87,8 @@ void tryServer::sendBack(cMessage *msg)
         msgsSent++;
         bytesSent += packet->getByteLength();
         emit(packetSentSignal, packet);
-//        if(simTime()>5400)
-//            std::cout<< "\n\n sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes at:"<<simTime()<<"\n\n";
+
+      //  std::cout<< "\n\n sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes at:"<<simTime()<<"\n\n";
     }
     else {
         EV_INFO << "sending \"" << msg->getName() << "\" to TCP\n";
@@ -99,7 +97,7 @@ void tryServer::sendBack(cMessage *msg)
     send(msg, "socketOut");
 }
 
-void tryServer::handleMessage(cMessage *msg)
+void midServer::handleMessage(cMessage *msg)
 {
 
     /*//msg kind:
@@ -123,7 +121,7 @@ void tryServer::handleMessage(cMessage *msg)
     else if (msg->getKind() == TCP_I_PEER_CLOSED) {
         // we'll close too, but only after there's surely no message
         // pending to be sent back in this connection
-        //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+        //std::cout<<"in  midServer:handlemsg:    "<< this->getFullPath();
         std::cout<<"   TCP_I_PEER_CLOSED      "<<endl;
         int connId = check_and_cast<Indication *>(msg)->getTag<SocketInd>()->getSocketId();
         //std::cout<<"   connId    "<< connId <<endl;
@@ -136,7 +134,7 @@ void tryServer::handleMessage(cMessage *msg)
         sendOrSchedule(request, delay + maxMsgDelay);
     }
     else if (msg->getKind() == TCP_I_DATA || msg->getKind() == TCP_I_URGENT_DATA) {
-      //  std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+      //  std::cout<<"in  midServer:handlemsg:    "<< this->getFullPath();
     //    std::cout<<"   TCP_I_DATA  -  TCP_I_URGENT_DATA      ";//<<endl;  //here send the reply
         Packet *packet = check_and_cast<Packet *>(msg);
         int connId = packet->getTag<SocketInd>()->getSocketId();
@@ -177,7 +175,7 @@ void tryServer::handleMessage(cMessage *msg)
         delete msg;
 
         if (doClose) {
-            //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+            //std::cout<<"in  midServer:handlemsg:    "<< this->getFullPath();
             std::cout<<"   TCP_I_DATA  -  Do Close      "<<endl;
             auto request = new Request("close", TCP_C_CLOSE);
             TcpCommand *cmd = new TcpCommand();
@@ -188,7 +186,7 @@ void tryServer::handleMessage(cMessage *msg)
     }
     else if (msg->getKind() == TCP_I_AVAILABLE)
     {
-        //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+        //std::cout<<"in  midServer:handlemsg:    "<< this->getFullPath();
         //std::cout<<"   TCP_I_AVAILABLE      "<<endl;
         int connId = check_and_cast<Indication *>(msg)->getTag<SocketInd>()->getSocketId();
         //std::cout<<"   connId    "<< connId <<endl;
@@ -201,14 +199,14 @@ void tryServer::handleMessage(cMessage *msg)
     }
 }
 
-void tryServer::refreshDisplay() const
+void midServer::refreshDisplay() const
 {
     char buf[64];
     sprintf(buf, "rcvd: %ld pks %ld bytes\nsent: %ld pks %ld bytes", msgsRcvd, bytesRcvd, msgsSent, bytesSent);
     getDisplayString().setTagArg("t", 0, buf);
 }
 
-void tryServer::finish()
+void midServer::finish()
 {
     EV_INFO << getFullPath() << ": sent " << bytesSent << " bytes in " << msgsSent << " packets\n";
     EV_INFO << getFullPath() << ": received " << bytesRcvd << " bytes in " << msgsRcvd << " packets\n";

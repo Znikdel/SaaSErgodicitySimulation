@@ -15,37 +15,40 @@
 
 package ErgodicityTest;
 
-import inet.applications.contract.IApp;
+import org.omnetpp.queueing.Queue;
 
-module VirtualMachine
+
+module PretioSmall
 {
     parameters:
-        int numApps = default(0);
-        @display("bgb=931,486");
-    gates:
-        input socketIn;
-        output socketOut;
+        @display("i=block/queue;bgb=285,308");
+        int numQ = default(1);  // each Q represents one app in the application layer
 
+    gates:
+        input socketIn[numQ] @labels(TcpCommand/up);
+        output socketOut[numQ] @labels(TcpCommand/down);
 
     submodules:
-        appServer[numApps]: <> like IApp {
-            parameters:
-                @display("p=570,280,row,150");
+
+        Q[numQ]: TryQ {
+            capacity = default(10);
+            @display("p=169.54666,99.22333");
         }
-		app[numApps]: <> like IApp {
-            parameters:
-                @display("p=570,280,row,150");
-        }
-        tryQ: TryQ {
-            @display("p=576,76");
-        }
-        tryQserver[numApps]: RRScheduler {
-            
-            @display("p=567,166");
+
+
+        S[numQ]: RRScheduler {
+
+            @display("p=74,100");
         }
     connections:
-        socketIn --> tryQ.in++;
-        for i=0..numApps-1{
-        	tryQ.out++ --> tryQserver[i].in++;
+        for i=0..numQ-1 {
+            socketIn[i] --> Q[i].in++;
+            Q[i].out++ --> S[i].in++;
+            S[i].out --> socketOut[i];
+
+
         }
+	
+
+
 }

@@ -23,8 +23,8 @@ module ClientNode extends StandardHost
     parameters:
         @display("p=230,200;i=device/server");
         @figure[submodules];
-        @statistic[respTimeAggregared](title="respTimeAggregared"; source="respTime";record=histogram;interpolationmode=sample-hold);
-        @statistic[failedReqAggregared](title="failedReqAggregared"; source="failedReq";record=histogram;interpolationmode=sample-hold);
+        @statistic[respTimeAggregated](title="respTimeAggregated"; source="respTime";record=histogram;interpolationmode=sample-hold);
+        @statistic[failedReqAggregated](title="failedReqAggregated"; source="failedReq";record=histogram;interpolationmode=sample-hold);
         
             
 }

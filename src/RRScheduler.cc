@@ -110,9 +110,11 @@ void RRScheduler::handleMessage(cMessage *msg)
            emit(busySignal, true);
            jobServiced = msg;
            simtime_t serviceTime = par("serviceTime"); //e.g. 10s
+//           if (simTime()>5100)
+//           std::cout<<"  In  Scheduler: "<< "at:   "<<simTime()<< "serviceTime:   "<<serviceTime<<endl;
            simtime_t endServiceTime1 = simTime()+serviceTime; //e.g 110+10=120s
            simtime_t endServiceTime2 = wakeUpTime+shortDelay; //e.g 102+0.001=102.001s
-           if (endServiceTime1>=endServiceTime2)
+           if (endServiceTime1>=endServiceTime2) //why? to make sure we have a little bit of service time
            {
                scheduleAt(endServiceTime1, endServiceMsg);
            }

@@ -17,35 +17,25 @@ package ErgodicityTest;
 
 import inet.applications.contract.IApp;
 
-module VirtualMachine
+module Container
 {
     parameters:
-        int numApps = default(0);
         @display("bgb=931,486");
     gates:
         input socketIn;
         output socketOut;
-
-
     submodules:
-        appServer[numApps]: <> like IApp {
+        appServer: <> like IApp {
             parameters:
                 @display("p=570,280,row,150");
         }
-		app[numApps]: <> like IApp {
+        appClient: <> like IApp {
             parameters:
-                @display("p=570,280,row,150");
+                @display("p=670,380,row,150");
         }
-        tryQ: TryQ {
-            @display("p=576,76");
-        }
-        tryQserver[numApps]: RRScheduler {
-            
-            @display("p=567,166");
-        }
+
     connections:
-        socketIn --> tryQ.in++;
-        for i=0..numApps-1{
-        	tryQ.out++ --> tryQserver[i].in++;
-        }
+        socketIn --> appServer.socketIn;
+        appServer.socketOut --> appClient.socketIn;
+        appClient.socketOut --> socketOut;
 }

@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for ErgodicityTest
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KNEDDEMO_PROJ=../../neddemo -KQUEUEINGLIB_PROJ=../../queueinglib -KQUEUEINGLIBEXT_PROJ=../../queueinglibext -KRESULTFILES_PROJ=../../resultfiles -KROUTING_PROJ=../../routing -KSOCKETS_PROJ=../../sockets -DINET_IMPORT -DQUEUEING_IMPORT -I. -I$$\(INET4_PROJ\)/src -I$$\(QUEUEINGLIB_PROJ\) -L$$\(INET4_PROJ\)/src -L$$\(QUEUEINGLIB_PROJ\) -L$$\(QUEUEINGLIBEXT_PROJ\) -lINET$$\(D\) -lqueueinglib$$\(D\) -lqueueinglibext$$\(D\)
+#  opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KQUEUEINGLIB_PROJ=../../queueinglib -KQUEUEINGLIBEXT_PROJ=../../queueinglibext -DINET_IMPORT -DQUEUEING_IMPORT -I. -I$$\(INET4_PROJ\)/src -I$$\(QUEUEINGLIB_PROJ\) -L$$\(INET4_PROJ\)/src -L$$\(QUEUEINGLIB_PROJ\) -L$$\(QUEUEINGLIBEXT_PROJ\) -lINET$$\(D\) -lqueueinglib$$\(D\) -lqueueinglibext$$\(D\)
 #
 
 # Name of target to be created (-o option)
@@ -34,7 +34,14 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/ErgodicityTestClient.o $O/RRScheduler.o $O/tryQ.o $O/tryQStrategy.o $O/tryServer.o
+OBJS = \
+    $O/ErgodicityTestClient.o \
+    $O/midClient.o \
+    $O/midServer.o \
+    $O/RRScheduler.o \
+    $O/tryQ.o \
+    $O/tryQStrategy.o \
+    $O/tryServer.o
 
 # Message files
 MSGFILES =
@@ -44,12 +51,8 @@ SMFILES =
 
 # Other makefile variables (-K)
 INET4_PROJ=../../inet4
-NEDDEMO_PROJ=../../neddemo
 QUEUEINGLIB_PROJ=../../queueinglib
 QUEUEINGLIBEXT_PROJ=../../queueinglibext
-RESULTFILES_PROJ=../../resultfiles
-ROUTING_PROJ=../../routing
-SOCKETS_PROJ=../../sockets
 
 #------------------------------------------------------------------------------
 

@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "ErgodicityTestClient.h"
+#include "midClient.h"
 
 #include "inet/applications/tcpapp/GenericAppMsg_m.h"
 #include "inet/common/ModuleAccess.h"
@@ -33,20 +33,20 @@ namespace ErgodicityTest {
 #define MSGKIND_RTOS               6
 #define MSGKIND_CLOSE              7
 
-Define_Module(ErgodicityTestClient);
+Define_Module(midClient);
 
-ErgodicityTestClient::~ErgodicityTestClient()
+midClient::~midClient()
 {
     cancelAndDelete(timeoutMsg);
 }
-void ErgodicityTestClient::initialize(int stage)
+void midClient::initialize(int stage)
 {
   //  std::cout<<"initialize:   "<<this->getFullPath()<<endl;
 
     TcpAppBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
         mainSocketID=socket.getSocketId();
-        numRequestsToSend = -1;
+        numRequestsToSend = 0;
         numRequestsToRecieve=0;
         replyCount=0;
 
@@ -89,7 +89,7 @@ void ErgodicityTestClient::initialize(int stage)
         RTOS_hard_limit=8;   //with RTOS reliable should be false
     }
 }
-void ErgodicityTestClient::handleStartOperation(LifecycleOperation *operation)
+void midClient::handleStartOperation(LifecycleOperation *operation)
 {
 //    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
 //        std::cout<<"  In  handleStartOperation: "<< endl;
@@ -118,14 +118,14 @@ void ErgodicityTestClient::handleStartOperation(LifecycleOperation *operation)
             }
     }
 }
-void ErgodicityTestClient::handleStopOperation(LifecycleOperation *operation)
+void midClient::handleStopOperation(LifecycleOperation *operation)
 {
     if(timeoutMsg)
         cancelEvent(timeoutMsg);
     if (socket.getState() == TcpSocket::CONNECTED || socket.getState() == TcpSocket::CONNECTING || socket.getState() == TcpSocket::PEER_CLOSED)
         socket.destroy();
 }
-void ErgodicityTestClient::handleCrashOperation(LifecycleOperation *operation)
+void midClient::handleCrashOperation(LifecycleOperation *operation)
 {
     EV_WARN << "handle crash operation in client";
     if(timeoutMsg)
@@ -133,55 +133,48 @@ void ErgodicityTestClient::handleCrashOperation(LifecycleOperation *operation)
     if (operation->getRootModule() != getContainingNode(this))
         socket.destroy();
 }
-void ErgodicityTestClient::handleTimer(cMessage *msg)
+void midClient::handleTimer(cMessage *msg)
 {
     simtime_t d=simTime();
-//    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-   //     std::cout<<"now in handleTimer:  "<<d <<"   startTime:   "<<startTime<<"   stopTime:    "<<stopTime<<endl;
-    if (((stopTime < SIMTIME_ZERO || d < stopTime) && d>=startTime) || burstyTraffic)
+  //  std::cout<<"now in handleTimer:  "<<d;
+    if ((stopTime < SIMTIME_ZERO || d < stopTime) && d>=startTime)
     {
 
             switch (msg->getKind()) {
 
             case MSGKIND_CONNECT:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                    std::cout<<"    MSGKIND_CONNECT:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_CONNECT:"<<msg->getKind()<<endl;
                 msg_Connect(msg);
                 break;
             }
             case MSGKIND_SEND:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                    std::cout<<"    MSGKIND_SEND:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_SEND:"<<msg->getKind()<<endl;
                 sendRequest(0);
                 break;
             }
             case MSGKIND_SEND_REPEAT:
             {
-                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-                    std::cout<<"    MSGKIND_SEND_REPEAT:   "<<repeated_req<< endl;
+                //std::cout<<"    MSGKIND_SEND_REPEAT:"<<msg->getKind()<<endl;
                 sendRequest(1);
                 break;
             }
             case MSGKIND_REPLYTIMEOUT:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                    std::cout<<"    MSGKIND_REPLYTIMEOUT:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_REPLYTIMEOUT:"<<msg->getKind()<<endl;
                 msg_ReplyTimeOut(msg);
                 break;
             }
             case MSGKIND_BURST_START:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                    std::cout<<"    MSGKIND_BURST_START:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_BURST_START:"<<msg->getKind()<<endl;
                 msg_Burst_Start(msg);
                 break;
             }
             case MSGKIND_BURST_FIN:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                    std::cout<<"    MSGKIND_BURST_FIN:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_BURST_FIN:"<<msg->getKind()<<endl;
                 msg_Burst_Finish(msg);
                 break;
             }
@@ -193,8 +186,7 @@ void ErgodicityTestClient::handleTimer(cMessage *msg)
             }
             case MSGKIND_CLOSE:
             {
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                        std::cout<<"    MSGKIND_CLOSE:"<<msg->getKind()<<endl;
+                //std::cout<<"    MSGKIND_CLOSE:"<<msg->getKind()<<endl;
                 if (!burstyTraffic)
                     close();
                 else
@@ -203,7 +195,7 @@ void ErgodicityTestClient::handleTimer(cMessage *msg)
             }
             default:
             {
-               if(timeoutMsg)
+                if(timeoutMsg)
                cancelEvent(timeoutMsg);
                throw cRuntimeError("Invalid timer msg: kind=%d", msg->getKind());
             }
@@ -211,7 +203,7 @@ void ErgodicityTestClient::handleTimer(cMessage *msg)
 
     }
 }
-Packet* ErgodicityTestClient::makePacket(bool resend)
+Packet* midClient::makePacket(bool resend)
 {
 
        long requestLength = par("requestLength");
@@ -248,7 +240,7 @@ Packet* ErgodicityTestClient::makePacket(bool resend)
 
            return packet;
 }
-void ErgodicityTestClient::sendRequest(bool resend)
+void midClient::sendRequest(bool resend)
 {
 //        if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
 //            std::cout<<"  In  send Request: "<< "at:   "<<simTime()<< "numRequestsToSend:   "<<numRequestsToSend<< "    resend:   "<<resend <<
@@ -256,7 +248,7 @@ void ErgodicityTestClient::sendRequest(bool resend)
 
         if (socket.getState() == TcpSocket::CONNECTED || socket.getState() == TcpSocket::CONNECTING )
                   {
-//            if (this->getFullPath()=="PretioWithLB.client[0].app[0]" and simTime()>5100)
+//            if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
 //                                                           std::cout<<"In send Packet - Socket Connected at: "<<simTime()<<endl;
                       Packet *packet = makePacket(resend);
                       sendPacket(packet);
@@ -293,7 +285,7 @@ void ErgodicityTestClient::sendRequest(bool resend)
 
             }
 }
-void ErgodicityTestClient::msg_Connect(cMessage *msg)
+void midClient::msg_Connect(cMessage *msg)
 {
     // The request initiated by user
         // significance of earlySend: if true, data will be sent already
@@ -318,7 +310,7 @@ void ErgodicityTestClient::msg_Connect(cMessage *msg)
 
 
 }
-void ErgodicityTestClient::msg_RTOS(cMessage *msg)
+void midClient::msg_RTOS(cMessage *msg)
 {
     //                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
     //    std::cout<<"In handle Timer - MSGKIND_RTOS at: "<<simTime()<<endl;
@@ -326,41 +318,30 @@ void ErgodicityTestClient::msg_RTOS(cMessage *msg)
         Packet *packet=makePacket(1);
         socketDataArrived(&socket,packet,false);
 }
-void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
+void midClient::msg_ReplyTimeOut(cMessage *msg)
 {
     simtime_t d=simTime();
-    //std::cout<<"  In  MSGKIND_REPLYTIMEOUT at: "<< d << endl;
+   // std::cout<<"  In  MSGKIND_REPLYTIMEOUT at: "<< d << endl;
     simtime_t now_reply = simTime()-lastReplyTime;
 
                    if (now_reply >= replyTimeMax )
                    {
                        EV_WARN << "didn't get reply from the server, re-sending a request," << "remaining " << numRequestsToSend  << " request\n";
-//                       if(failed_req>0)
-//                           if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                               std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
+//                       std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
 //                                                     this->getFullPath()<< "   Socket Id: "<<
 //                                                     socket.getSocketId()<<"at:   "<<simTime() <<
 //                                                     "   failed req:   " << failed_req <<
 //                                                     "   repeated req: " << repeated_req <<
-//                                                     "   now_reply:  "  << now_reply << endl;
+//                                                     "   sendReqTime:  "  << sendReqTime <<  endl;
                        if (!reliableProtocol)
                        {
-//                          if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                               std::cout<<"  In  MSGKIND_REPLYTIMEOUT_Non-Reliable: "<<  this->getFullPath()<< "at:   "<<
-//                                   simTime() <<"   failed req:   " << failed_req <<
-//                                   "----> numRequestsToSend ------>   "<<numRequestsToSend<<endl;
                           if (failed_req>4)  // we waited for 4 times of max_reply_time. If there is no reply it means it's a failed request
                              {
-                              if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-                                 std::cout<<"  In  MSGKIND_REPLYTIMEOUT_Non-Reliable: "<<
-                                                               this->getFullPath()<< "at:   "<<simTime() <<
-                                                               "   failed req:   " << failed_req <<
-                                                               "   repeated req: " << repeated_req <<
-                                                               "   sendReqTime:  "  << sendReqTime <<  endl;
                                  if (repeated_req>4)
                                  {
                                       repeated_req=0;
                                       connected=false;
+
                                   }
                                   failed_req=0;  // check if too many failed messages maybe the socket has problem so re-establish the connection
                                   repeated_req++;
@@ -375,54 +356,46 @@ void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
 
                                   d = simTime();
                             //      if(!burstyTraffic)
-                                  rescheduleOrDeleteTimer(d, MSGKIND_CLOSE); // we need to move on to the next request
+                                      rescheduleOrDeleteTimer(d, MSGKIND_CLOSE); // we need to move on to the next request
                              }
 
-                           ++failed_req; // wait more
-                    //       std::cout<<"  In  MSGKIND_REPLYTIMEOUT_Non-Reliable: "<<
-                       //                                                                   this->getFullPath()<< "at:   "<<simTime() <<
-                         //                                                                 "   failed req:   " << failed_req <<endl;
+                           failed_req++; // wait more
+
                            d = simTime() + replyTimeMax;
 
-                           if (reliabletimeoutMsg)
-                                 cancelEvent(reliabletimeoutMsg);
+                           cancelEvent(reliabletimeoutMsg);  // We got the reply, so no need to check for reply time out
                            reliabletimeoutMsg->setKind(MSGKIND_REPLYTIMEOUT);
-                           scheduleAt(d, reliabletimeoutMsg);  // check if we'll get reply in time
+                           scheduleAt(d, reliabletimeoutMsg);  //here we check if we got reply in time
 
                        }
                        else{  // reliable protocol
-                           //if(repeated_req>4)
-//                           if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                               std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
-//                                                                                this->getFullPath()<< "   Socket Id: "<<
-//                                                                                socket.getSocketId()<<"at:   "<<simTime() <<
-//                                                                                "   repeated req: " << repeated_req <<
-//                                                                                "   sendReqTime:  "  << sendReqTime <<  endl;
+                           if(repeated_req>4)
+                           std::cout<<"  In  MSGKIND_REPLYTIMEOUT: "<<
+                                                                                this->getFullPath()<< "   Socket Id: "<<
+                                                                                socket.getSocketId()<<"at:   "<<simTime() <<
+                                                                                "   repeated req: " << repeated_req <<
+                                                                                "   sendReqTime:  "  << sendReqTime <<  endl;
                        if (timeoutMsg and (repeated_req>8))
                        {
-//                           if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                               std::cout<<"  In  failed req:  repeated_req  --->"<<repeated_req<<endl;
+                           std::cout<<"  In  failed req:  repeated_req  --->"<<repeated_req<<endl;
                            simtime_t d = simTime()-sendReqTime; //sendReqTime is the connect time
                            failedReqVector.record(d);
                            emit(failedReqSignal,d);
                            failedReqNoSendVector.record(numRequestsToSend);
                            emit(failedReqNoSendSignal,numRequestsToSend);
                            d = simTime();
-                           ++failed_req;
-                           if(failed_req>8)
-                           {
-                               connected=false;
-                               failed_req=0;
-                           }
-                           rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
+                           connected=false;
+                         //  if(!burstyTraffic)
+                            rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
                        }
                        else if (timeoutMsg) {   //re-sending the request
+
+
                                    cancelEvent(timeoutMsg);
                                    d = simTime();
                                    ++repeated_req;
-                                   //if(repeated_req>4)
-//                                   if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                                           std::cout<<"  In  resending:  repeated_req  --->"<<repeated_req<<endl;
+                                   if(repeated_req>4)
+                                       std::cout<<"  In  resending:  repeated_req  --->"<<repeated_req<<endl;
                                    rescheduleOrDeleteTimer(d, MSGKIND_SEND_REPEAT);
 
                                }
@@ -436,17 +409,13 @@ void ErgodicityTestClient::msg_ReplyTimeOut(cMessage *msg)
                        }
                    }
 }
-void ErgodicityTestClient::msg_Burst_Start(cMessage *msg)
+void midClient::msg_Burst_Start(cMessage *msg)
 {
-
+//    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+//                                      std::cout<<"IN BURST START ------>  Burst start at:"<<simTime()<<endl;
           burstStarted=true;
           stopTime =  startTime + burstLen;
           burst_finished=stopTime;
-          if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-                                                std::cout<<"IN BURST START ------>  Burst start at:"<<simTime()<<
-                                                "     burstLen:   "<<burstLen<<"   stopTime:    "<<stopTime<<
-                                                "     numRequestsToSend:   "<<numRequestsToSend<<
-                                                endl;
 //          numRequestsToSend = 0;
 //          numRequestsToRecieve=0;
 //          replyCount=0;
@@ -459,7 +428,7 @@ void ErgodicityTestClient::msg_Burst_Start(cMessage *msg)
 //          sendReqTime=startTime;
 //          getReplyTime=startTime;
 
-          if (startTime < stopTime and numRequestsToSend==-1)
+          if (startTime < stopTime)
               rescheduleOrDeleteTimer(startTime, MSGKIND_CONNECT);
 
           if(bursttimeoutMsg)
@@ -468,10 +437,8 @@ void ErgodicityTestClient::msg_Burst_Start(cMessage *msg)
           bursttimeoutMsg->setKind(MSGKIND_BURST_FIN);
           scheduleAt(stopTime, bursttimeoutMsg);
 }
-void ErgodicityTestClient::msg_Burst_Finish(cMessage *msg)
+void midClient::msg_Burst_Finish(cMessage *msg)
 {
-//    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                                          std::cout<<"------------#########-------IN BURST FINISH ------>  Burst    finished at:"<<simTime()<<endl;
         burstStarted=false;
         startTime = stopTime + burstLen;  // next start time
         stopTime =  startTime + burstLen; // next stop time
@@ -485,7 +452,7 @@ void ErgodicityTestClient::msg_Burst_Finish(cMessage *msg)
         }
 
 }
-void ErgodicityTestClient::socketEstablished(TcpSocket *socket)
+void midClient::socketEstablished(TcpSocket *socket)
 {
   //  std::cout<<"In socketEstablished START at:  "<<simTime()<<endl;
 
@@ -504,8 +471,6 @@ void ErgodicityTestClient::socketEstablished(TcpSocket *socket)
     // perform first request if not already done (next one will be sent when reply arrives)
     if (!earlySend)
     {
-//        if (this->getFullPath()=="PretioWithLB.client[0].app[0]" and simTime()>5100)
-//            std::cout<<"In socketEstablished and sendReqTime at:  "<<simTime()<<endl;
         sendRequest(0);
         sendReqTime=simTime();
 
@@ -513,7 +478,7 @@ void ErgodicityTestClient::socketEstablished(TcpSocket *socket)
    // numRequestsToRecieve=numRequestsToSend; // Why Here?
   //  std::cout<<"In socketEstablished END at:  "<<simTime()<<endl;
 }
-void ErgodicityTestClient::rescheduleOrDeleteTimer(simtime_t d, short int msgKind)
+void midClient::rescheduleOrDeleteTimer(simtime_t d, short int msgKind)
 {
 //    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
 //           std::cout<<"In rescheduleOrDeleteTimer old msg:"<<timeoutMsg->getKind()<<  "     at:"<< simTime()<<"    new msg::"<<   msgKind<<endl;
@@ -523,7 +488,7 @@ void ErgodicityTestClient::rescheduleOrDeleteTimer(simtime_t d, short int msgKin
     timeoutMsg->setKind(msgKind);
     scheduleAt(d, timeoutMsg);
 }
-void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, bool urgent)
+void midClient::socketDataArrived(TcpSocket *socket, Packet *msg, bool urgent)
 {
 
     int msgRecieved=msg->getByteLength()/10;
@@ -540,7 +505,7 @@ void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, boo
 
         simtime_t myRespTime = simTime()-sendInternalReqTime;
 //        if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//            std::cout<<"/////////////////////////////   reply arrived at:    "<<simTime()<<"  ,  myRespTime:"<<myRespTime<<"numRequestsToSend ------>   "<<numRequestsToSend<<endl;
+ //       std::cout<<"/////////////////////////////   reply arrived at:    "<<simTime()<<"  ,  myRespTime:"<<myRespTime<<endl;
         EV_INFO << "reply arrived\n";
         replyCount++;
         numRequestsToRecieve--;
@@ -565,11 +530,11 @@ void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, boo
                 respTimeVector.record(respTime);
                 emit(respTimeSignal,respTime); //response time to all small requests, kind of demonstrates the server markov chain
                 simtime_t d = simTime();
-//                if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//                //if(respTime>32)
-//                    std::cout<<"////////// LAst  socketDataArrived    ///////////   at   ---->"<<simTime()<<"    sendReqTime:    "<<sendReqTime<<"    resp time: ---->"<<respTime<<endl;
+    //            if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
+                if(respTime>500)
+                std::cout<<"///////////////////////////// LAst  socketDataArrived    ////////////////   at   ---->"<<simTime()<<"sendReqTime:    "<<sendReqTime<<"resp time: ---->"<<respTime<<endl;
     //            if (!burstyTraffic)
-                rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
+                    rescheduleOrDeleteTimer(d, MSGKIND_CLOSE);
       //          else
         //            TimeOutSocketClosed();
             }
@@ -589,10 +554,8 @@ void ErgodicityTestClient::socketDataArrived(TcpSocket *socket, Packet *msg, boo
       //  std::cout<< this->getFullPath()<<"  msgRecieved: "<<msgRecieved<< "     we are waiting for:---> "<<(numRequestsToSend+1)<<endl;
     }
 }
-void ErgodicityTestClient::close()
+void midClient::close()
 {
-//    if (this->getFullPath()=="PretioWithLB.client[0].app[0]" and simTime()>5100)
-//               std::cout<<" SocketClosed   and sendReqTime at:    "<<simTime()<<endl;
     socketClosedFlag=true;
 
     numRequestsToSend = 0;
@@ -621,11 +584,11 @@ void ErgodicityTestClient::close()
     }
    //
 }
-void ErgodicityTestClient::TimeOutSocketClosed()
+void midClient::TimeOutSocketClosed()
 {
 //    if (this->getFullPath()=="PretioWithLB.client[0].app[0]")
-//           std::cout<<" TimeOutSocketClosed    at:    "<<simTime()<<"    burst_finished:" <<burst_finished<< endl;
-    numRequestsToSend = -1;
+//                      std::cout<<" TimeOutSocketClosed    at:    "<<simTime()<<endl;
+    numRequestsToSend = 0;
     numRequestsToRecieve=0;
     replyCount=0;
     lastReplyTime=simTime();
@@ -643,12 +606,12 @@ void ErgodicityTestClient::TimeOutSocketClosed()
             rescheduleOrDeleteTimer(d, MSGKIND_CONNECT);
     }
 }
-void ErgodicityTestClient::socketClosed(TcpSocket *socket)  //no need for this function
+void midClient::socketClosed(TcpSocket *socket)  //no need for this function
 {
     socketClosedFlag=true;
 
 }
-void ErgodicityTestClient::socketFailure(TcpSocket *socket, int code)
+void midClient::socketFailure(TcpSocket *socket, int code)
 {
 
     std::cout<<this->getFullPath()<<"    In socketFailure  "<< this->getFullPath()<<"    state:           "<<socket->getState()<<endl;
