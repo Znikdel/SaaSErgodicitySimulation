@@ -21,7 +21,10 @@
 #include "IPassiveQueue.h"
 //#include "SelectionStrategies.h"
 #include "tryQStrategy.h"
-
+#include <iostream>
+#include <regex>
+#include <string>
+//#include "inet/common/packet/ChunkQueue.h"
 using namespace queueing;
 
 namespace ErgodicityTest {
@@ -42,8 +45,8 @@ class QUEUEING_API TryQ : public cSimpleModule, public IPassiveQueue
         bool fifo;
         int capacity;
         cQueue queue;
-        tryQStrategy *selectionStrategy;
-
+        tryQStrategy *selectionStrategy;  //select server
+        bool RTOS=false;
         simtime_t delay;
 
         void queueLengthChanged();

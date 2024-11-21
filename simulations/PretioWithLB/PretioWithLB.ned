@@ -15,11 +15,9 @@
 
 package ErgodicityTest.simulations.PretioWithLB;
 
+import ErgodicityTest.ClientNode;
 import ErgodicityTest.PhysicalNode;
-//
-//
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
-import inet.node.inet.StandardHost;
 import inet.node.internetcloud.InternetCloud;
 import ned.DatarateChannel;
 
@@ -42,7 +40,10 @@ network PretioWithLB
                 @display("p=100,100;is=s");
         }
 
-        client[numClients]: StandardHost {
+        //        client[numClients]: StandardHost {
+        //            @display("p=250,100,row,100");
+        //        }
+        client[numClients]: ClientNode {
             @display("p=250,100,row,100");
         }
         server[numServers]: PhysicalNode {

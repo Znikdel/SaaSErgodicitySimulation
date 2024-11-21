@@ -35,7 +35,7 @@ TryQ::~TryQ()
 void TryQ::initialize()
 {
     delay=par("droppedMsgSendDelay");
-
+    RTOS=par("RTOS");
     droppedSignal = registerSignal("dropped");
     receivedSignal = registerSignal("received");
     queueingTimeSignal = registerSignal("queueingTime");
@@ -76,8 +76,43 @@ void TryQ::handleMessage(cMessage *msg)
     int k = selectionStrategy->select();
     if (k < 0) {
         // enqueue if no idle server found
-        queue.insert(msg);
+        if(RTOS)
+                {
+                    std::cout<<"In server's queue: RTOS "<<endl;
+                    cPacket *packet = dynamic_cast<cPacket *>(msg);
+                    int p=0;
+                    if (packet) {
+                        p=packet->getByteLength();
+                        std::cout<<"In server's queue: "<<p<<endl;
+                    }
+                    if(!queue.isEmpty())
+                        {
+                            cMessage * old_msg = (cMessage *)queue.get(0);
+                            std::string msg_str=old_msg->str();
+                            std::regex length_pattern("length = (\\d+) B");
+                            std::smatch matches;
+                            int b=0;
+                            if (std::regex_search(msg_str, matches, length_pattern) && matches.size() > 1) {
+                                   // Convert the matched string to an integer
+                                   b= std::stoi(matches[1].str());
+                               }
+
+                            std::cout<<"In server's queue: old msg"<<old_msg->getInsertOrder()<<"  ,  "<<  b<<endl;
+
+                            queue.insert(msg);
+
+
+                        }
+                    else
+                        queue.insert(msg);
+
+                }
+        else
+        {
+            queue.insert(msg);
+        }
         emit(queueLengthSignal, length());
+
        // job->setQueueCount(job->getQueueCount() + 1);
 
     }
@@ -109,6 +144,7 @@ void TryQ::request(int gateIndex)
     cMessage *msg;
     if (fifo) {
         msg = (cMessage *)queue.pop(); // takes from head
+
     }
     else {
         msg = (cMessage *)queue.back();

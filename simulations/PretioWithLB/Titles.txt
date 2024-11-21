@@ -1,0 +1,16 @@
+Response Time CDF for 100 Independent Runs - Bursty Traffic - Small System - Dedicated Server - Q Drops - Reliable Protocol
+Response Time CDF for 100 Independent Runs - Bursty Traffic - Small System - Dedicated Server - Q Drops - Non-reliable Protocol
+
+Response Time CDF for 100 Independent Runs - Bursty Traffic - Large System - Dedicated Server - Q Drops - Reliable Protocol
+Response Time CDF for 100 Independent Runs - Bursty Traffic - Large System - Dedicated Server - Q Drops - Non-reliable Protocol
+
+Response Time CDF for 100 Independent Runs - Normal Traffic - Small System - Dedicated Server - Q Drops - Reliable Protocol
+Response Time CDF for 100 Independent Runs - Normal Traffic - Small System - Dedicated Server - Q Drops - Non-reliable Protocol
+
+Response Time CDF for 100 Independent Runs - Normal Traffic - Large System - Dedicated Server - Q Drops - Reliable Protocol
+Response Time CDF for 100 Independent Runs - Normal Traffic - Large System - Dedicated Server - Q Drops - Non-reliable Protocol
+
+Response Time CDF for 100 Independent Runs - Normal Traffic - Large System - Shared Server - No Q Drops - Reliable Protocol
+Response Time CDF for 100 Independent Runs - Normal Traffic - Large System - Shared Server - No Q Drops - Non-reliable Protocol
+
+x ( Normalized Time Steps)

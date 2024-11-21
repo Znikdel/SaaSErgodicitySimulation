@@ -1,46 +1,37 @@
 #
-# OMNeT++/OMNEST Makefile for ErgodicityTest
+# OMNeT++/OMNEST Makefile for $(LIB_PREFIX)ErgodicityTest
 #
 # This file was generated with the command:
-#  opp_makemake -f
+#  opp_makemake --make-so -f --deep -O out -KINET4_PROJ=../inet4 -KNEDDEMO_PROJ=../neddemo -KQUEUEINGLIB_PROJ=../queueinglib -KQUEUEINGLIBEXT_PROJ=../queueinglibext -KRESULTFILES_PROJ=../resultfiles -KROUTING_PROJ=../routing -KSOCKETS_PROJ=../sockets -DINET_IMPORT -DQUEUEING_IMPORT -I. -I$$\(INET4_PROJ\)/src -I$$\(QUEUEINGLIB_PROJ\) -L$$\(INET4_PROJ\)/src -L$$\(QUEUEINGLIB_PROJ\) -L$$\(QUEUEINGLIBEXT_PROJ\) -lINET$$\(D\) -lqueueinglib$$\(D\) -lqueueinglibext$$\(D\) -d src -X.
 #
 
 # Name of target to be created (-o option)
 TARGET_DIR = .
-TARGET_NAME = ErgodicityTest$(D)
-TARGET = $(TARGET_NAME)$(EXE_SUFFIX)
+TARGET_NAME = $(LIB_PREFIX)ErgodicityTest$(D)
+TARGET = $(TARGET_NAME)$(SHARED_LIB_SUFFIX)
 TARGET_IMPLIB = $(TARGET_NAME)$(IMPLIB_SUFFIX)
 TARGET_IMPDEF = $(TARGET_NAME)$(IMPDEF_SUFFIX)
 TARGET_FILES = $(TARGET_DIR)/$(TARGET)
-
-# User interface (uncomment one) (-u option)
-USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LIBS)
-#USERIF_LIBS = $(CMDENV_LIBS)
-#USERIF_LIBS = $(TKENV_LIBS)
-#USERIF_LIBS = $(QTENV_LIBS)
-
-# C++ include paths (with -I)
-INCLUDE_PATH =
 
 # Additional object and library files to link with
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS =
+LIBS = $(LDFLAG_LIBPATH)$(INET4_PROJ)/src $(LDFLAG_LIBPATH)$(QUEUEINGLIB_PROJ) $(LDFLAG_LIBPATH)$(QUEUEINGLIBEXT_PROJ)  -lINET$(D) -lqueueinglib$(D) -lqueueinglibext$(D)
 
 # Output directory
 PROJECT_OUTPUT_DIR = out
 PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
-# Object files for local .cc, .msg and .sm files
-OBJS =
-
-# Message files
-MSGFILES =
-
-# SM files
-SMFILES =
+# Other makefile variables (-K)
+INET4_PROJ=../inet4
+NEDDEMO_PROJ=../neddemo
+QUEUEINGLIB_PROJ=../queueinglib
+QUEUEINGLIBEXT_PROJ=../queueinglibext
+RESULTFILES_PROJ=../resultfiles
+ROUTING_PROJ=../routing
+SOCKETS_PROJ=../sockets
 
 #------------------------------------------------------------------------------
 
@@ -59,11 +50,10 @@ endif
 include $(CONFIGFILE)
 
 # Simulation kernel and user interface libraries
-OMNETPP_LIBS = $(OPPMAIN_LIB) $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
-
-COPTS = $(CFLAGS) $(IMPORT_DEFINES)  $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
-MSGCOPTS = $(INCLUDE_PATH)
-SMCOPTS =
+OMNETPP_LIBS = -loppenvir$D $(KERNEL_LIBS) $(SYS_LIBS)
+ifneq ($(PLATFORM),win32.x86_64)
+LIBS += -Wl,-rpath,$(abspath $(INET4_PROJ)/src) -Wl,-rpath,$(abspath $(QUEUEINGLIB_PROJ)) -Wl,-rpath,$(abspath $(QUEUEINGLIBEXT_PROJ))
+endif
 
 # we want to recompile everything if COPTS changes,
 # so we store COPTS into $COPTS_FILE (if COPTS has changed since last build)
@@ -74,8 +64,21 @@ ifneq ("$(COPTS)","$(shell cat $(COPTS_FILE) 2>/dev/null || echo '')")
   $(file >$(COPTS_FILE),$(COPTS))
 endif
 
+# On Windows, the target has additional file(s). An import lib and an optional debug symbol file is created too.
+ifeq ($(PLATFORM),win32.x86_64)
+  TARGET_FILES+= $(TARGET_DIR)/$(TARGET_IMPDEF) $(TARGET_DIR)/$(TARGET_IMPLIB)
+  LDFLAGS+=$(LDFLAG_IMPDEF)$O/$(TARGET_IMPDEF) $(LDFLAG_IMPLIB)$O/$(TARGET_IMPLIB)
+  ifeq ($(TOOLCHAIN_NAME),clang-msabi)
+    ifeq ($(MODE),debug)
+      TARGET_FILES+=$(TARGET_DIR)/$(TARGET_NAME).pdb
+    endif
+  endif
+endif
+
 #------------------------------------------------------------------------------
 # User-supplied makefile fragment(s)
+-include makefrag
+
 #------------------------------------------------------------------------------
 
 # Main target
@@ -88,37 +91,35 @@ ifeq ($(TOOLCHAIN_NAME),clang-msabi)
 	-$(Q)-$(LN) $(<:%.dll=%.lib) $(@:%.dll=%.lib) 2>/dev/null
 endif
 
-$O/$(TARGET): $(OBJS)  $(wildcard $(EXTRA_OBJS)) Makefile $(CONFIGFILE)
+$O/$(TARGET) $O/$(TARGET_IMPDEF) $O/$(TARGET_IMPLIB) &:  submakedirs $(wildcard $(EXTRA_OBJS)) Makefile $(CONFIGFILE)
 	@$(MKPATH) $O
-	@echo Creating executable: $@
-	$(Q)$(CXX) $(LDFLAGS) -o $O/$(TARGET) $(OBJS) $(EXTRA_OBJS) $(AS_NEEDED_OFF) $(WHOLE_ARCHIVE_ON) $(LIBS) $(WHOLE_ARCHIVE_OFF) $(OMNETPP_LIBS)
+	@echo Creating shared library: $@
+	$(Q)$(SHLIB_LD) -o $O/$(TARGET)  $(EXTRA_OBJS) $(AS_NEEDED_OFF) $(WHOLE_ARCHIVE_ON) $(LIBS) $(WHOLE_ARCHIVE_OFF) $(OMNETPP_LIBS) $(LDFLAGS)
+	$(Q)$(SHLIB_POSTPROCESS) $O/$(TARGET)
+ifeq ($(PLATFORM),win32.x86_64)
+	$(Q)llvm-ar d $O/$(TARGET_IMPLIB) $(TARGET) # WORKAROUND: throw away the first file from the archive to make the LLD generated import lib valid
+endif
 
-.PHONY: all clean cleanall depend msgheaders smheaders
+submakedirs:  src_dir
 
-.SUFFIXES: .cc
+.PHONY: all clean cleanall depend msgheaders smheaders  src
+src: src_dir
 
-$O/%.o: %.cc $(COPTS_FILE) | msgheaders smheaders
-	@$(MKPATH) $(dir $@)
-	$(qecho) "$<"
-	$(Q)$(CXX) -c $(CXXFLAGS) $(COPTS) -o $@ $<
+src_dir:
+	cd src && $(MAKE) all
 
-%_m.cc %_m.h: %.msg
-	$(qecho) MSGC: $<
-	$(Q)$(MSGC) -s _m.cc -MD -MP -MF $O/$(basename $<)_m.h.d $(MSGCOPTS) $?
+msgheaders:
+	$(Q)cd src && $(MAKE) msgheaders
 
-%_sm.cc %_sm.h: %.sm
-	$(qecho) SMC: $<
-	$(Q)$(SMC) -c++ -suffix cc $(SMCOPTS) $?
-
-msgheaders: $(MSGFILES:.msg=_m.h)
-
-smheaders: $(SMFILES:.sm=_sm.h)
+smheaders:
+	$(Q)cd src && $(MAKE) smheaders
 
 clean:
 	$(qecho) Cleaning $(TARGET)
 	$(Q)-rm -rf $O
 	$(Q)-rm -f $(TARGET_FILES)
 	$(Q)-rm -f $(call opp_rwildcard, . , *_m.cc *_m.h *_sm.cc *_sm.h)
+	-$(Q)cd src && $(MAKE) clean
 
 cleanall:
 	$(Q)$(CLEANALL_COMMAND)

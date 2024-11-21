@@ -42,6 +42,7 @@ class INET_API ErgodicityTestClient : public TcpAppBase
     cMessage *timeoutMsg = nullptr;
     cMessage *reliabletimeoutMsg = nullptr;
     cMessage *bursttimeoutMsg = nullptr;
+    cMessage *rtostimeoutMsg = nullptr;
 
     bool earlySend = false;    // if true, don't wait with sendRequest() until established()
     bool replyFlag=true;
@@ -53,6 +54,8 @@ class INET_API ErgodicityTestClient : public TcpAppBase
     bool randomBurst=false;
     bool firstConnection=true;
     bool RTOS=false;
+    bool dynamicScaling=false;
+    bool dynamicScalingAdd=false;
 
     int numRequestsToSend = 0;    // requests to send in this session
     int numRequestsToRecieve = 0;
@@ -73,6 +76,7 @@ class INET_API ErgodicityTestClient : public TcpAppBase
 
     int replyTimeMax;
     int burstLen = 0;
+    int portCounter=0;
 
     cOutVector respTimeVector;
     simsignal_t respTimeSignal;
@@ -83,10 +87,13 @@ class INET_API ErgodicityTestClient : public TcpAppBase
     cOutVector failedReqNoSendVector;
     simsignal_t failedReqNoSendSignal;
 
+    simsignal_t newContainerSignal;
+
     bool LOCALLY_CLOSED_flag=false;
   //  TcpSocket mySocket;
     int repeated_req=0;
-
+    int connectPort = 0;
+ //   int localPort = 0;
     Packet *last_packet;
     //auto sequenceNumber;
 
@@ -97,6 +104,7 @@ class INET_API ErgodicityTestClient : public TcpAppBase
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void initialize(int stage) override;
 
+    virtual void connect() override;
     virtual void socketEstablished(TcpSocket *socket) override;
     virtual void socketDataArrived(TcpSocket *socket, Packet *msg, bool urgent) override;
     virtual void socketClosed(TcpSocket *socket) override;

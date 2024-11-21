@@ -25,6 +25,7 @@ module ClientNode extends StandardHost
         @figure[submodules];
         @statistic[respTimeAggregated](title="respTimeAggregated"; source="respTime";record=histogram;interpolationmode=sample-hold);
         @statistic[failedReqAggregated](title="failedReqAggregated"; source="failedReq";record=histogram;interpolationmode=sample-hold);
+        @statistic[containers](title="containers"; source="newContainer";record=max;interpolationmode=sample-hold);
         
             
 }

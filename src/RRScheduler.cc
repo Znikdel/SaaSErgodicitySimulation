@@ -80,6 +80,10 @@ void RRScheduler::handleMessage(cMessage *msg)
             ASSERT(allocated);
             simtime_t d = simTime() - endServiceMsg->getSendingTime(); //e.g
           //  jobServiced->setTotalServiceTime(jobServiced->getTotalServiceTime() + d);
+            simtime_t age= simTime()-jobServiced->getCreationTime();
+//            if(age>7)
+//                std:: cout<<"   jobServiced age :  "<< age <<endl;
+
             send(jobServiced, "out"); // jobsesrviced is the msg came from client
             jobServiced = nullptr;
             allocated = false;
@@ -109,6 +113,9 @@ void RRScheduler::handleMessage(cMessage *msg)
                throw cRuntimeError("a new job arrived while already servicing one");
            emit(busySignal, true);
            jobServiced = msg;
+//           std:: cout<<"msg age:  "<<simTime()-msg->getCreationTime()<<"   jobServiced age:  "<< simTime()-jobServiced->getCreationTime()<<endl;
+//           std:: cout<<msg->getSenderModule()<<"   jobServiced:  "<< jobServiced->getName()<<endl;
+
            simtime_t serviceTime = par("serviceTime"); //e.g. 10s
 //           if (simTime()>5100)
 //           std::cout<<"  In  Scheduler: "<< "at:   "<<simTime()<< "serviceTime:   "<<serviceTime<<endl;

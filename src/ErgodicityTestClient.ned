@@ -94,6 +94,7 @@ simple ErgodicityTestClient like IApp
     	bool burstyTraffic = default(false);
     	bool RTOS = default(false);
     	bool randomBurst = default(false);
+    	bool dynamicScaling=default(false);
     	
         @signal[packetSent](type=inet::Packet);
         @signal[packetReceived](type=inet::Packet);
@@ -102,9 +103,13 @@ simple ErgodicityTestClient like IApp
        	@signal[respTime](type=long);
        	@signal[failedReq](type=int);
        	@signal[failedNoReq](type=int);
+       	@signal[newContainer](type=int);
+       	
     //   	@signal[numReqSent](type=inet::Packet);
     //   	@signal[numReqRecieved](type=inet::Packet);
     //   	@signal[numLostReq](type=inet::Packet);
+        
+        @statistic[newContainer](title="number of containers launched"; source=newContainer; record=count; interpolationmode=none);
        	
         @statistic[packetReceived](title="packets received"; source=packetReceived; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);
         @statistic[packetSent](title="packets sent"; source=packetSent; record=count,"sum(packetBytes)","vector(packetBytes)"; interpolationmode=none);

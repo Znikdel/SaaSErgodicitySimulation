@@ -35,14 +35,16 @@ class INET_API tryServer : public cSimpleModule, public LifecycleUnsupported
 
   protected:
     TcpSocket socket;
-    simtime_t delay;
+    //simtime_t delay;
     simtime_t maxMsgDelay;
+    simtime_t arrival;
 
     long msgsRcvd;
     long msgsSent;
     long bytesRcvd;
     long bytesSent;
 
+    bool RTOS;
     //cOutVector serviceTimeVector;
 
     std::map<int, ChunkQueue> socketQueue;

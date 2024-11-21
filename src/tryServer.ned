@@ -39,9 +39,9 @@ simple tryServer like IApp
     parameters:
         string localAddress = default(""); // local address; may be left empty ("")
         @figure[submodules];
-        
+        bool RTOS= default(false);
         int localPort = default(1000);     // localPort number to listen on
-        double replyDelay @unit(s) = default(0s);
+        double replyDelay @unit(s);
         @display("i=block/app");
         @lifecycleSupport;
         double stopOperationExtraTime @unit(s) = default(-1s);    // extra time after lifecycle stop operation finished

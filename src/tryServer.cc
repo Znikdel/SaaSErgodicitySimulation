@@ -36,12 +36,12 @@ void tryServer::initialize(int stage)
     cSimpleModule::initialize(stage);
 
     if (stage == INITSTAGE_LOCAL) {
-        delay = par("replyDelay");
+      //  delay = 0;//par("replyDelay");
         maxMsgDelay = 0;
-
+        RTOS=par("RTOS");
         //statistics
         msgsRcvd = msgsSent = bytesRcvd = bytesSent = 0;
-
+        arrival=simTime();
      //   WATCH(msgsRcvd);
      //   WATCH(msgsSent);
      //   WATCH(bytesRcvd);
@@ -52,6 +52,7 @@ void tryServer::initialize(int stage)
     else if (stage == INITSTAGE_APPLICATION_LAYER) {
         const char *localAddress = par("localAddress");
         int localPort = par("localPort");
+        std::cout<<"    in server localPort:  "<< localPort <<endl;
         socket.setOutputGate(gate("socketOut"));
         socket.bind(localAddress[0] ? L3AddressResolver().resolve(localAddress) : L3Address(), localPort);
         socket.listen();
@@ -67,7 +68,7 @@ void tryServer::initialize(int stage)
 void tryServer::sendOrSchedule(cMessage *msg, simtime_t delay)
 {
 //    if(simTime()>5400)
-//        std::cout<<"reply delay in server:  "<< delay <<endl;
+ //   std::cout<<"    reply delay in server:  "<< delay <<endl;
     if (delay == 0)
     {
         sendBack(msg);
@@ -90,7 +91,8 @@ void tryServer::sendBack(cMessage *msg)
         bytesSent += packet->getByteLength();
         emit(packetSentSignal, packet);
 //        if(simTime()>5400)
-//            std::cout<< "\n\n sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes at:"<<simTime()<<"\n\n";
+
+     //   std::cout<< "\n\n sending \"" << packet->getName() << "\" to TCP, " << packet->getByteLength() << " bytes at:"<<simTime()<<"\n\n";
     }
     else {
         EV_INFO << "sending \"" << msg->getName() << "\" to TCP\n";
@@ -117,10 +119,11 @@ void tryServer::handleMessage(cMessage *msg)
     TCP_I_DATA_NOTIFICATION = 12; // notify the upper layer that data has arrived
     */
     if (msg->isSelfMessage()) {
-     //   std::cout<<"self message at:      "<<simTime()<<endl;
+//        std::cout<<"self message at:      "<<simTime()<<endl;
         sendBack(msg);
     }
     else if (msg->getKind() == TCP_I_PEER_CLOSED) {
+
         // we'll close too, but only after there's surely no message
         // pending to be sent back in this connection
         //std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
@@ -133,12 +136,18 @@ void tryServer::handleMessage(cMessage *msg)
         request->addTag<SocketReq>()->setSocketId(connId);
         request->setControlInfo(cmd);
     //    //std::cout<<"   before scheduling in server msg handling    "<< connId <<endl;
+        simtime_t  delay = par("replyDelay");
         sendOrSchedule(request, delay + maxMsgDelay);
     }
     else if (msg->getKind() == TCP_I_DATA || msg->getKind() == TCP_I_URGENT_DATA) {
-      //  std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
-    //    std::cout<<"   TCP_I_DATA  -  TCP_I_URGENT_DATA      ";//<<endl;  //here send the reply
+        arrival=simTime();
+  //      std::cout<<"in  tryserver:handlemsg:    "<< this->getFullPath();
+//        std::cout<<"   TCP_I_DATA  -  TCP_I_URGENT_DATA      ";//<<endl;  //here send the reply
         Packet *packet = check_and_cast<Packet *>(msg);
+        simtime_t age= simTime()- packet->getCreationTime();
+//        if(age>7)
+//            std::cout<<"\n Packet Age:    "<<age<<"  at:"<<simTime()<<endl;
+
         int connId = packet->getTag<SocketInd>()->getSocketId();
         ChunkQueue &queue = socketQueue[connId];
         auto chunk = packet->peekDataAt(B(0), packet->getTotalLength(), Chunk::PF_ALLOW_INCOMPLETE );
@@ -157,7 +166,7 @@ void tryServer::handleMessage(cMessage *msg)
             simtime_t msgDelay = appmsg->getReplyDelay();
             if (msgDelay > maxMsgDelay)
                 maxMsgDelay = msgDelay;
-      //      std::cout<<"  In SERVER requestedBytes    "<< requestedBytes <<endl;
+//            std::cout<<"  In SERVER requestedBytes    "<< requestedBytes <<"    msgDelay: "<<msgDelay<<endl;
             if (requestedBytes > B(0)) {
                 Packet *outPacket = new Packet(msg->getName(), TCP_C_SEND);
                 outPacket->addTag<SocketReq>()->setSocketId(connId);
@@ -167,7 +176,11 @@ void tryServer::handleMessage(cMessage *msg)
                 payload->setReplyDelay(0);
                 payload->addTag<CreationTimeTag>()->setCreationTime(simTime());
                 outPacket->insertAtBack(payload);
-                sendOrSchedule(outPacket, delay + msgDelay);
+//                std::cout<< "Time in SERVER:   "<< (simTime()+delay + msgDelay -arrival) << endl;
+                simtime_t  mydelay = par("replyDelay");
+            //    std::cout<<"    delay: "<<delay<<endl;
+                sendOrSchedule(outPacket, mydelay + msgDelay);
+//                if(p_age+delay + msgDelay)
             }
             if (appmsg->getServerClose()) {
                 doClose = true;
@@ -183,6 +196,7 @@ void tryServer::handleMessage(cMessage *msg)
             TcpCommand *cmd = new TcpCommand();
             request->addTag<SocketReq>()->setSocketId(connId);
             request->setControlInfo(cmd);
+            simtime_t  delay = par("replyDelay");
             sendOrSchedule(request, delay + maxMsgDelay);
         }
     }

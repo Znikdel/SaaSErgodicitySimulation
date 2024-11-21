@@ -130,6 +130,7 @@ RoundRobinSelectionStrategy::RoundRobinSelectionStrategy(cSimpleModule *module, 
         tryQStrategy(module, selectOnInGate)
 {
     lastIndex = -1;
+  //  return -1;
 }
 
 int RoundRobinSelectionStrategy::select()
